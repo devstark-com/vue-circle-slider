@@ -32,6 +32,19 @@ Vue.use(VueCircleSlider)
 
 # Usage
 
+## Functionality
+
+- svg based view
+- binding via `v-model`
+- defining min & max values
+- defining step size
+- animation while updating to new value on click by circle
+- touch devices support (`touchmove`)
+- sizes customization: exact and relative definitions
+- colors customization
+
+## Examples
+
 Plugin will register a global component with name `CircleSlider` so you can just use it right away:
 
 ```html
@@ -85,13 +98,13 @@ or customize some properties:
 
 ### Slots
 
-There is no any slots yet
+There is no any slots available
 
 
 # Demo
 
-- [Working demo](#)
-- [Repo](#)
+- [Working demo](https://vuedev-com.github.io/vue-circle-slider-demo/)
+- [Demo sources](https://github.com/vuedev-com/vue-circle-slider-demo/)
 
 # TODO
 
