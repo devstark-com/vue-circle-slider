@@ -1,8 +1,9 @@
 # vue-circle-slider
 
+[![vue2](https://img.shields.io/badge/vue-2.x-brightgreen.svg)](https://vuejs.org/)
 [![build](https://img.shields.io/wercker/ci/wercker/docs.svg)](https://github.com/vuedev-com/vue-circle-slider)
 [![npm](https://img.shields.io/npm/v/vue-circle-slider.svg) ![npm](https://img.shields.io/npm/dm/vue-circle-slider.svg)](https://www.npmjs.com/package/vue-circle-slider)
-[![vue2](https://img.shields.io/badge/vue-2.x-brightgreen.svg)](https://vuejs.org/)
+[![build](https://img.shields.io/npm/l/express.svg)](https://github.com/vuedev-com/vue-circle-slider)
 
 Circle slider component for Vue.js
 
