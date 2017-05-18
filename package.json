@@ -1,7 +1,7 @@
 {
   "name": "vue-circle-slider",
   "description": "Circle slider component for Vue.js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": {
     "name": "Saymon",
     "email": "saymon.biz@gmail.com"
@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Saymon-biz/vue-circle-slider.git"
+    "url": "git+https://github.com/vuedev-com/vue-circle-slider.git"
   },
   "bugs": {
-    "url": "https://github.com/Saymon-biz/vue-circle-slider/issues"
+    "url": "https://github.com/vuedev-com/vue-circle-slider/issues"
   },
-  "homepage": "https://github.com/Saymon-biz/vue-circle-slider#readme",
+  "homepage": "https://github.com/vuedev-com/vue-circle-slider#readme",
   "devDependencies": {
     "babel-core": "^6.0.0",
     "babel-eslint": "^7.1.1",
