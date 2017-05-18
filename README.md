@@ -1,5 +1,6 @@
 # vue-circle-slider
 
+[![build](https://img.shields.io/wercker/ci/wercker/docs.svg)](https://github.com/vuedev-com/vue-circle-slider)
 [![npm](https://img.shields.io/npm/v/vue-circle-slider.svg) ![npm](https://img.shields.io/npm/dm/vue-circle-slider.svg)](https://www.npmjs.com/package/vue-circle-slider)
 [![vue2](https://img.shields.io/badge/vue-2.x-brightgreen.svg)](https://vuejs.org/)
 
@@ -9,7 +10,9 @@ Circle slider component for Vue.js
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Example](#example)
+- [Demo](#demo)
+- [TODO intentions](#todo)
+- [Credits](#credits)
 
 # Installation
 
@@ -17,9 +20,7 @@ Circle slider component for Vue.js
 npm install --save vue-circle-slider
 ```
 
-## Default import
-
-Install all the components:
+## Adding into app
 
 ```javascript
 import Vue from 'vue'
@@ -27,84 +28,6 @@ import VueCircleSlider from 'vue-circle-slider'
 
 Vue.use(VueCircleSlider)
 ```
-
-Use specific components:
-
-```javascript
-import Vue from 'vue'
-import { Test } from 'vue-circle-slider'
-
-Vue.component('test', Test)
-```
-
-**⚠️ A css file is included when importing the package. You may have to setup your bundler to embed the css in your page.**
-
-## Distribution import
-
-Install all the components:
-
-```javascript
-import 'vue-circle-slider/dist/vue-circle-slider.css'
-import VueCircleSlider from 'vue-circle-slider/dist/vue-circle-slider.common'
-
-Vue.use(VueCircleSlider)
-```
-
-Use specific components:
-
-```javascript
-import 'vue-circle-slider/dist/vue-circle-slider.css'
-import { Test } from 'vue-circle-slider/dist/vue-circle-slider.common'
-
-Vue.component('test', Test)
-```
-
-**⚠️ You may have to setup your bundler to embed the css file in your page.**
-
-## Browser
-
-```html
-<link rel="stylesheet" href="vue-circle-slider/dist/vue-circle-slider.css"/>
-
-<script src="vue.js"></script>
-<script src="vue-circle-slider/dist/vue-circle-slider.browser.js"></script>
-```
-
-The plugin should be auto-installed. If not, you can install it manually with the instructions below.
-
-Install all the components:
-
-```javascript
-Vue.use(VueCircleSlider)
-```
-
-Use specific components:
-
-```javascript
-Vue.component('test', VueCircleSlider.Test)
-```
-
-## Source import
-
-Install all the components:
-
-```javascript
-import Vue from 'vue'
-import VueCircleSlider from 'vue-circle-slider/src'
-
-Vue.use(VueCircleSlider)
-```
-
-Use specific components:
-
-```javascript
-import Vue from 'vue'
-import { Test } from 'vue-circle-slider/src'
-
-Vue.component('test', Test)
-```
-
-**⚠️ You need to configure your bundler to compile `.vue` files.** More info [in the official documentation](https://vuejs.org/v2/guide/single-file-components.html).
 
 # Usage
 
@@ -116,7 +39,7 @@ Plugin will register a global component with name `CircleSlider` so you can just
 ...
 ```
 
-or you can adjust some properties:
+or customize some properties:
 
 ```html
 ...
@@ -153,7 +76,18 @@ or you can adjust some properties:
 | progressWidth    | Number        | null     | exact progress curve width in px |
 | progressWidthRel | Number        | 10       | relative progress curve width. will be calculated as `(side/2) / progressWidthRel` |
 
-# Example
+### Events
+
+| Name          | Params        | Description  |
+| --------------|:--------------|--------------|
+| touchmove     | none          | fires on touch devices |
+
+### Slots
+
+There is no any slots yet
+
+
+# Demo
 
 - [Working demo](#)
 - [Repo](#)
