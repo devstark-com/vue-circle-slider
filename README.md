@@ -93,6 +93,18 @@ There is no any slots yet
 - [Working demo](#)
 - [Repo](#)
 
+# TODO
+
+- add plugin options for defining custom defaults via `Vue.use(VueCircleSlider, options)`
+  - globalComponent[Boolean] - enable/disable global component registration
+  - componentName[String] - ability to define custom name for component
+  - options with defaults for all props (with same names)
+- add `limitMin` and `limitMax` props to limit an accessible slider range
+
+# Credits
+
+Built with [vue-share-components](https://github.com/Akryum/vue-share-components) by [Akryum](https://github.com/Akryum)
+
 ---
 
 # Plugin Development
