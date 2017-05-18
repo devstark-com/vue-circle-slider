@@ -1,7 +1,7 @@
 {
   "name": "vue-circle-slider",
   "description": "Circle slider component for Vue.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Saymon",
     "email": "saymon.biz@gmail.com"
@@ -9,7 +9,9 @@
   "keywords": [
     "vue",
     "vuejs",
-    "plugin"
+    "plugin",
+    "slider",
+    "circle"
   ],
   "license": "MIT",
   "main": "dist/vue-circle-slider.common.js",

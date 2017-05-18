@@ -9,7 +9,7 @@
       <g>
         <circle :stroke="circleColor" fill="none" :stroke-width="cpMainCircleStrokeWidth" :cx="cpCenter" :cy="cpCenter" :r="radius"></circle>
         <path :stroke="progressColor" fill="none" :stroke-width="cpPathStrokeWidth" :d="cpPathD"></path>
-        <circle :fill="knobColor" :r="knobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
+        <circle :fill="knobColor" :r="cpKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
       </g>
     </svg>
   </div>
@@ -30,7 +30,7 @@ export default {
     this.currentStepValue = this.circleSliderState.currentStep
 
     let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
-    this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.knobRadius * 2) / 2
+    this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpKnobRadius * 2) / 2
     this.updateFromPropValue(this.value)
   },
   mounted () {
@@ -52,7 +52,8 @@ export default {
     },
     side: {
       type: Number,
-      required: true
+      required: false,
+      default: 100
     },
     stepSize: {
       type: Number,
@@ -87,7 +88,12 @@ export default {
     knobRadius: {
       type: Number,
       required: false,
-      default: 15
+      default: null
+    },
+    knobRadiusRel: {
+      type: Number,
+      required: false,
+      default: 7
     },
     circleWidth: {
       type: Number,
@@ -158,6 +164,9 @@ export default {
     },
     cpPathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
+    },
+    cpKnobRadius () {
+      return this.knobRadius || (this.side / 2) / this.knobRadiusRel
     },
     cpPathD () {
       let parts = []
