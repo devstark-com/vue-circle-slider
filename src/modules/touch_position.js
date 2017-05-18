@@ -5,7 +5,7 @@ export default class TouchPosition {
     this.containerElement = containerElement
     this.sliderRadius = sliderRadius
     this.sliderTolerance = sliderTolerance
-    this.setNewPosition({pageX: 0, pageY: 0})
+    this.setNewPosition({x: 0, y: 0})
   }
 
   /*
@@ -14,8 +14,8 @@ export default class TouchPosition {
     const dimensions = this.containerElement.getBoundingClientRect()
     const side = dimensions.width
     this.center = side / 2
-    this.relativeX = e.pageX - dimensions.left
-    this.relativeY = e.pageY - dimensions.top
+    this.relativeX = e.x - dimensions.left
+    this.relativeY = e.y - dimensions.top
   }
 
   /*
