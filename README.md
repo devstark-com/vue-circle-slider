@@ -93,7 +93,7 @@ There is no any slots yet
 - [Working demo](#)
 - [Repo](#)
 
-# TODO intentions
+# TODO
 
 - add plugin options for defining custom defaults via `Vue.use(VueCircleSlider, options)`
   - globalComponent[Boolean] - enable/disable global component registration
