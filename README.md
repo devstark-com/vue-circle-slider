@@ -108,11 +108,55 @@ Vue.component('test', Test)
 
 # Usage
 
-> TODO
+Plugin will register a global component with name `CircleSlider` so you can just use it right away:
+
+```html
+...
+<circle-slider v-model="sliderValue"></circle-slider>
+...
+```
+
+or you can adjust some properties:
+
+```html
+...
+<circle-slider
+  v-model="sliderValue"
+  :side="150"
+  :min="0"
+  :max="10000"
+  :stepSize="100"
+  :circleWidthRel="20"
+  :progressWidthRel="10"
+  :knobRadius="10"
+></circle-slider>
+...
+```
+
+## Interface
+
+### Props
+
+| Props            | Type          | Default  | Description  |
+| ---------------- |:--------------| ---------|--------------|
+| side             | Number        | 100      | size of a side of a svg square in px |
+| min              | Number        | 0        | the minimum value |
+| max              | Number        | 100      | the maximum value |
+| stepSize         | Number        | 1        | the gap between the values |
+| circleColor      | String        | `#334860`| color of slider circumference |
+| progressColor    | String        | `#00be7e`| color of progress curve |
+| knobColor        | String        | `#00be7e`| knob color |
+| knobRadius       | Number        | null     | exact knob radius in px |
+| knobRadiusRel    | Number        | 7        | relative knob radius. will be calculated as `(side/2) / knobRadiusRel` |
+| circleWidth      | Number        | null     | exact width of circle in px |
+| circleWidthRel   | Number        | 20       | relative circle width. will be calculated as `(side/2) / circleWidthRel` |
+| progressWidth    | Number        | null     | exact progress curve width in px |
+| progressWidthRel | Number        | 10       | relative progress curve width. will be calculated as `(side/2) / progressWidthRel` |
 
 # Example
 
-> TODO
+- [Working demo](#)
+- [Repo](#)
 
 ---
 
