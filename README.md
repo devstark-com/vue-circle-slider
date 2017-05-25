@@ -61,10 +61,10 @@ or customize some properties:
   :side="150"
   :min="0"
   :max="10000"
-  :stepSize="100"
-  :circleWidthRel="20"
-  :progressWidthRel="10"
-  :knobRadius="10"
+  :step-size="100"
+  :circle-width-rel="20"
+  :progress-width-rel="10"
+  :knob-radius="10"
 ></circle-slider>
 ...
 ```
@@ -83,11 +83,11 @@ or customize some properties:
 | progressColor    | String        | `#00be7e`| color of progress curve |
 | knobColor        | String        | `#00be7e`| knob color |
 | knobRadius       | Number        | null     | exact knob radius in px |
-| knobRadiusRel    | Number        | 7        | relative knob radius. will be calculated as `(side/2) / knobRadiusRel` |
+| knobRadiusRel    | Number        | 7        | relative knob radius. radius value in px will be calculated as `(side/2) / knobRadiusRel` |
 | circleWidth      | Number        | null     | exact width of circle in px |
-| circleWidthRel   | Number        | 20       | relative circle width. will be calculated as `(side/2) / circleWidthRel` |
+| circleWidthRel   | Number        | 20       | relative circle width. width value in px will be calculated as `(side/2) / circleWidthRel` |
 | progressWidth    | Number        | null     | exact progress curve width in px |
-| progressWidthRel | Number        | 10       | relative progress curve width. will be calculated as `(side/2) / progressWidthRel` |
+| progressWidthRel | Number        | 10       | relative progress curve width. width value in px will be calculated as `(side/2) / progressWidthRel` |
 
 ### Events
 
