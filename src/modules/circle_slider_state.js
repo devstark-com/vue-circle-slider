@@ -12,8 +12,8 @@ export default class CircleSliderState {
       }
     }
     this.firstStep = this.steps[0]
-    this.lastStep = this.steps[this.steps.length - 1]
-    this.length = this.steps.length
+    this.length = this.steps.length - 1
+    this.lastStep = this.steps[this.length]
   }
 
   /*
@@ -25,10 +25,10 @@ export default class CircleSliderState {
   /*
    */
   get angleValue () {
-    return Math.min(
+    return (Math.min(
       this.offset + this.angleUnit * this.currentStepIndex,
       Math.PI * 2 - Number.EPSILON
-    )
+    )) - 0.00001 // correct for 100% value
   }
 
   /*
@@ -47,13 +47,13 @@ export default class CircleSliderState {
       }
     }
 
-    this.currentStepIndex = this.length - 1
+    this.currentStepIndex = this.length
   }
 
   /*
    */
   updateCurrentStepFromAngle (angle) {
-    const stepIndex = Math.floor((angle - this.offset) / this.angleUnit)
-    this.currentStepIndex = Math.min(Math.max(stepIndex, 0), (this.length - 1))
+    const stepIndex = Math.round((angle - this.offset) / this.angleUnit)
+    this.currentStepIndex = Math.min(Math.max(stepIndex, 0), this.length)
   }
 }
