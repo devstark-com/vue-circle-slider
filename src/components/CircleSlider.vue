@@ -276,7 +276,7 @@ export default {
 
       this.angle = this.cpAngleValue
       this.currentStepValue = stepValue
-      this.$emit('input', this.currentStepValue)
+      // this.$emit('input', this.currentStepValue)
       this.animateSlider(oldAngle, this.angle)
     },
     updateSlider () {
