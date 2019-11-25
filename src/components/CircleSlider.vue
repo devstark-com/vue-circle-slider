@@ -269,7 +269,7 @@ export default {
       }
     },
     updateFromPropValue (value) {
-      let oldAngle = this.angle
+      let previousAngle = this.angle
       
       let stepValue = this.fitToStep(value)
       this.updateCurrentStepFromValue(stepValue)
@@ -277,7 +277,7 @@ export default {
       this.angle = this.cpAngleValue
       this.currentStepValue = stepValue
       // this.$emit('input', this.currentStepValue)
-      this.animateSlider(oldAngle, this.angle)
+      this.animateSlider(previousAngle, this.angle)
     },
     updateSlider () {
       const angle = this.cpSliderAngle
@@ -287,7 +287,7 @@ export default {
     },
     animateSlider (startAngle, endAngle) {
       const direction = startAngle < endAngle ? 1 : -1
-      const curveAngleMovementUnit = direction * this.cpAngleUnit * 2
+      const curveAngleMovementUnit = (direction * this.cpAngleUnit * 2) / this.stepSize
 
       const animate = () => {
         if (Math.abs(endAngle - startAngle) < Math.abs(2 * curveAngleMovementUnit)) {
