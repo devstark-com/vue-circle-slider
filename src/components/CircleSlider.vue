@@ -269,12 +269,15 @@ export default {
       }
     },
     updateFromPropValue (value) {
+      let oldAngle = this.angle
+      
       let stepValue = this.fitToStep(value)
       this.updateCurrentStepFromValue(stepValue)
 
       this.angle = this.cpAngleValue
       this.currentStepValue = stepValue
       this.$emit('input', this.currentStepValue)
+      this.animateSlider(oldAngle, this.angle)
     },
     updateSlider () {
       const angle = this.cpSliderAngle
