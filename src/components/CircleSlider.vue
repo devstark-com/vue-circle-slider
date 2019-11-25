@@ -15,8 +15,6 @@
   </div>
 </template>
 <script>
-import TouchPosition from '../modules/touch_position.js'
-import CircleSliderState from '../modules/circle_slider_state.js'
 export default {
   name: 'CircleSlider',
   created () {
@@ -25,16 +23,19 @@ export default {
       length: this.stepsCount
     }, (_, i) => this.min + i * this.stepSize)
 
-    this.circleSliderState = new CircleSliderState(this.steps, this.startAngleOffset, this.value)
-    this.angle = this.circleSliderState.angleValue
-    this.currentStepValue = this.circleSliderState.currentStep
+    this.defineInitialCurrentStepIndex()
+
+    this.angle = this.cpAngleValue
+    this.currentStepValue = this.cpCurrentStep
 
     let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
     this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpKnobRadius * 2) / 2
     this.updateFromPropValue(this.value)
   },
   mounted () {
-    this.touchPosition = new TouchPosition(this.$refs._svg, this.radius, this.radius / 2)
+    this.containerElement = this.$refs._svg
+    this.sliderTolerance = this.radius / 2
+    this.setNewPosition({x: 0, y: 0})
   },
   props: {
     startAngleOffset: {
@@ -134,8 +135,12 @@ export default {
       angle: 0,
       currentStepValue: 0,
       mousePressed: false,
-      circleSliderState: null,
-      mousemoveTicks: 0
+      mousemoveTicks: 0,
+      currentStepIndex: 0,
+      length: 0,
+      sliderTolerance: 0,
+      relativeX: 0,
+      relativeY: 0
     }
   },
   computed: {
@@ -144,6 +149,9 @@ export default {
     //     return 0
     //   }
     // },
+    cpStepsLength () {
+      return this.steps.length - 1
+    },
     cpCenter () {
       return this.side / 2
     },
@@ -181,36 +189,44 @@ export default {
       parts.push(this.cpPathX)
       parts.push(this.cpPathY)
       return parts.join(' ')
+    },
+    cpAngleUnit () {
+      return (Math.PI * 2 - this.startAngleOffset) / this.cpStepsLength
+    },
+    cpAngleValue () {
+      return (Math.min(
+        this.startAngleOffset + this.cpAngleUnit * this.currentStepIndex,
+        Math.PI * 2 - Number.EPSILON
+      )) - 0.00001 // correct for 100% value
+    },
+    cpCurrentStep () {
+      return this.steps[this.currentStepIndex]
+    },
+    cpSliderAngle () {
+      return (Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + Math.PI * 3 / 2) % (Math.PI * 2)
+    },
+    cpIsTouchWithinSliderRange () {
+      const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.cpCenter), 2) + Math.pow(Math.abs(this.relativeY - this.cpCenter), 2))
+      return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
     }
   },
   methods: {
-    /*
-     */
     fitToStep (val) {
       return Math.round(val / this.stepSize) * this.stepSize
     },
-
-    /*
-     */
     handleClick (e) {
-      this.touchPosition.setNewPosition(e)
-      if (this.touchPosition.isTouchWithinSliderRange) {
-        const newAngle = this.touchPosition.sliderAngle
+      this.setNewPosition(e)
+      if (this.cpIsTouchWithinSliderRange) {
+        const newAngle = this.cpSliderAngle
         this.animateSlider(this.angle, newAngle)
       }
     },
-
-    /*
-     */
     handleMouseDown (e) {
       e.preventDefault()
       this.mousePressed = true
       window.addEventListener('mousemove', this.handleWindowMouseMove)
       window.addEventListener('mouseup', this.handleMouseUp)
     },
-
-    /*
-     */
     handleMouseUp (e) {
       e.preventDefault()
       this.mousePressed = false
@@ -218,9 +234,6 @@ export default {
       window.removeEventListener('mouseup', this.handleMouseUp)
       this.mousemoveTicks = 0
     },
-
-    /*
-     */
     handleWindowMouseMove (e) {
       e.preventDefault()
       if (this.mousemoveTicks < 5) {
@@ -228,12 +241,9 @@ export default {
         return
       }
 
-      this.touchPosition.setNewPosition(e)
+      this.setNewPosition(e)
       this.updateSlider()
     },
-
-    /*
-     */
     handleTouchMove (e) {
       this.$emit('touchmove')
       // Do nothing if two or more fingers used
@@ -242,65 +252,83 @@ export default {
       }
 
       const lastTouch = e.targetTouches.item(e.targetTouches.length - 1)
-      this.touchPosition.setNewPosition(lastTouch)
+      this.setNewPosition(lastTouch)
 
-      if (this.touchPosition.isTouchWithinSliderRange) {
+      if (this.cpIsTouchWithinSliderRange) {
         e.preventDefault()
         this.updateSlider()
       }
     },
+    updateAngle (angle, isAnimationFinished = true) {
+      this.updateCurrentStepFromAngle(angle)
+      this.angle = this.cpAngleValue
+      this.currentStepValue = this.cpCurrentStep
 
-    /*
-     */
-    updateAngle (angle) {
-      this.circleSliderState.updateCurrentStepFromAngle(angle)
-      this.angle = this.circleSliderState.angleValue
-      this.currentStepValue = this.circleSliderState.currentStep
-
-      this.$emit('input', this.currentStepValue)
+      if (isAnimationFinished) {
+        this.$emit('input', this.currentStepValue)
+      }
     },
-
-    /*
-     */
     updateFromPropValue (value) {
       let stepValue = this.fitToStep(value)
-      this.circleSliderState.updateCurrentStepFromValue(stepValue)
+      this.updateCurrentStepFromValue(stepValue)
 
-      this.angle = this.circleSliderState.angleValue
+      this.angle = this.cpAngleValue
       this.currentStepValue = stepValue
       this.$emit('input', this.currentStepValue)
     },
-
-    /*
-     */
     updateSlider () {
-      const angle = this.touchPosition.sliderAngle
+      const angle = this.cpSliderAngle
       if (Math.abs(angle - this.angle) < Math.PI) {
         this.updateAngle(angle)
       }
     },
-
-    /*
-     */
     animateSlider (startAngle, endAngle) {
       const direction = startAngle < endAngle ? 1 : -1
-      const curveAngleMovementUnit = direction * this.circleSliderState.angleUnit * 2
+      const curveAngleMovementUnit = direction * this.cpAngleUnit * 2
 
       const animate = () => {
         if (Math.abs(endAngle - startAngle) < Math.abs(2 * curveAngleMovementUnit)) {
-          this.updateAngle(endAngle)
+          this.updateAngle(endAngle, true)
         } else {
           const newAngle = startAngle + curveAngleMovementUnit
-          this.updateAngle(newAngle)
+          this.updateAngle(newAngle, false)
           this.animateSlider(newAngle, endAngle)
         }
       }
 
       window.requestAnimationFrame(animate)
+    },
+    defineInitialCurrentStepIndex () {
+      for (let stepIndex in this.steps) {
+        if (this.steps[stepIndex] === this.value) {
+          this.currentStepIndex = stepIndex
+          break
+        }
+      }
+    },
+    updateCurrentStepFromValue (value) {
+      for (let i = 0; i < this.cpStepsLength; i++) {
+        if (value <= this.steps[i]) {
+          this.currentStepIndex = i
+          return
+        }
+      }
+
+      this.currentStepIndex = this.cpStepsLength
+    },
+    updateCurrentStepFromAngle (angle) {
+      const stepIndex = Math.round((angle - this.startAngleOffset) / this.cpAngleUnit)
+      this.currentStepIndex = Math.min(Math.max(stepIndex, 0), this.cpStepsLength)
+    },
+    setNewPosition (e) {
+      const dimensions = this.containerElement.getBoundingClientRect()
+      this.relativeX = e.clientX - dimensions.left
+      this.relativeY = e.clientY - dimensions.top
     }
   },
   watch: {
     value (val) {
+      if (val === this.currentStepValue) return 
       this.updateFromPropValue(val)
     }
   }
