@@ -259,7 +259,7 @@ export default {
         this.updateSlider()
       }
     },
-    updateAngle (angle, isAnimationFinished = true) {
+    updateAngle (angle, isAnimationFinished) {
       this.updateCurrentStepFromAngle(angle)
       this.angle = this.cpAngleValue
       this.currentStepValue = this.cpCurrentStep
