@@ -36,6 +36,11 @@ export default {
     this.containerElement = this.$refs._svg
     this.sliderTolerance = this.radius / 2
     this.setNewPosition({x: 0, y: 0})
+
+    this.containerElement.addEventListener('wheel', this.handleWheelScroll)
+  },
+  beforeDestroy () {
+    this.containerElement.removeEventListener('wheel', this.handleWheelScroll)
   },
   props: {
     startAngleOffset: {
@@ -327,6 +332,11 @@ export default {
       const dimensions = this.containerElement.getBoundingClientRect()
       this.relativeX = e.clientX - dimensions.left
       this.relativeY = e.clientY - dimensions.top
+    },
+    handleWheelScroll (e) {
+      e.preventDefault()
+      const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
+      this.updateFromPropValue(valueFromScroll)
     }
   },
   watch: {
