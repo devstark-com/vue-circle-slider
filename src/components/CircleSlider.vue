@@ -115,6 +115,11 @@ export default {
       type: Number,
       required: false,
       default: 10
+    },
+    counterClockwise: {
+      type: Boolean,
+      required: false,
+      default: false
     }
     // limitMin: {
     //   type: Number,
@@ -156,20 +161,24 @@ export default {
       return this.side / 2
     },
     cpAngle () {
-      return this.angle + Math.PI / 2
+      if (this.counterClockwise) return this.angle
+      return this.angle + Math.PI / 2 
     },
     cpMainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
     cpPathDirection () {
+      if (this.counterClockwise) return (this.cpAngle < Math.PI) ? 0 : 1
       return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
     },
     cpPathX () {
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpAngle)
       return this.cpCenter + this.radius * Math.cos(this.cpAngle)
     },
     cpPathY () {
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpAngle)
       return this.cpCenter + this.radius * Math.sin(this.cpAngle)
-    },
+    }, 
     cpPathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
     },
@@ -185,9 +194,10 @@ export default {
       parts.push(this.radius)
       parts.push(0)
       parts.push(this.cpPathDirection)
-      parts.push(1)
+      parts.push( this.counterClockwise ? 0 : 1 )
       parts.push(this.cpPathX)
       parts.push(this.cpPathY)
+
       return parts.join(' ')
     },
     cpAngleUnit () {
@@ -325,7 +335,10 @@ export default {
     },
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
-      this.relativeX = e.clientX - dimensions.left
+      if (this.counterClockwise) {
+        this.relativeX = dimensions.right - e.clientX
+      } else this.relativeX = e.clientX - dimensions.left
+      
       this.relativeY = e.clientY - dimensions.top
     }
   },
