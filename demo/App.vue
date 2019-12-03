@@ -8,7 +8,7 @@
       :side="300"
       :circleWidth="20"
       :knobRadius="20"
-      :stepSize="10"
+      :startPosition="300"
     >
     </circle-slider>
     <div class="value"> {{ sliderValue }} </div>
