@@ -1,14 +1,10 @@
 <template>
   <div id="app">
-    <h1 class="heading">
-      This is DEMO of the Plugin in App
-    </h1>
     <circle-slider 
       v-model="sliderValueOrZero"
       :side="300"
       :circleWidth="20"
       :knobRadius="20"
-      :stepSize="10"
     >
     </circle-slider>
     <div class="value"> {{ sliderValue }} </div>
@@ -41,6 +37,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-top: 200px;
   }
 
   .heading {

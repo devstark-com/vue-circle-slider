@@ -10,6 +10,7 @@
         <circle :stroke="circleColor" fill="none" :stroke-width="cpMainCircleStrokeWidth" :cx="cpCenter" :cy="cpCenter" :r="radius"></circle>
         <path :stroke="progressColor" fill="none" :stroke-width="cpPathStrokeWidth" :d="cpPathD"></path>
         <circle :fill="knobColor" :r="cpKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
+        <circle :fill="knobColor" :r="cpKnobRadius" :cx="cpKnobMinX" :cy="cpKnobMinY"></circle>
       </g>
     </svg>
   </div>
@@ -115,6 +116,11 @@ export default {
       type: Number,
       required: false,
       default: 10
+    },
+    minKnobAngle: {
+      type: Number,
+      required: false,
+      default: 90 // degrees
     }
     // limitMin: {
     //   type: Number,
@@ -162,7 +168,8 @@ export default {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
     cpPathDirection () {
-      return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
+      // return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
+      return (this.cpAngle - (this.cpMinKnobRadians - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
     cpPathX () {
       return this.cpCenter + this.radius * Math.cos(this.cpAngle)
@@ -178,8 +185,10 @@ export default {
     },
     cpPathD () {
       let parts = []
-      parts.push('M' + this.cpCenter)
-      parts.push(this.cpCenter + this.radius)
+      // parts.push('M' + this.cpCenter)
+      parts.push('M' + this.cpKnobMinX)
+      // parts.push(this.cpCenter + this.radius)
+      parts.push(this.cpKnobMinY)
       parts.push('A')
       parts.push(this.radius)
       parts.push(this.radius)
@@ -206,8 +215,18 @@ export default {
       return (Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + Math.PI * 3 / 2) % (Math.PI * 2)
     },
     cpIsTouchWithinSliderRange () {
+      // console.log('calc offset')
       const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.cpCenter), 2) + Math.pow(Math.abs(this.relativeY - this.cpCenter), 2))
       return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
+    },
+    cpKnobMinX () {
+      return this.cpCenter + this.radius * Math.cos(this.cpMinKnobRadians)
+    },
+    cpKnobMinY () {
+      return this.cpCenter + this.radius * Math.sin(this.cpMinKnobRadians)
+    },
+    cpMinKnobRadians () {
+      return this.minKnobAngle / 180 * Math.PI
     }
   },
   methods: {
@@ -215,6 +234,7 @@ export default {
       return Math.round(val / this.stepSize) * this.stepSize
     },
     handleClick (e) {
+      // console.log('handled')
       this.setNewPosition(e)
       if (this.cpIsTouchWithinSliderRange) {
         const newAngle = this.cpSliderAngle
@@ -298,7 +318,6 @@ export default {
           this.animateSlider(newAngle, endAngle)
         }
       }
-
       window.requestAnimationFrame(animate)
     },
     defineInitialCurrentStepIndex () {
@@ -316,7 +335,6 @@ export default {
           return
         }
       }
-
       this.currentStepIndex = this.cpStepsLength
     },
     updateCurrentStepFromAngle (angle) {
