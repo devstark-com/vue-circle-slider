@@ -48,7 +48,6 @@ export default {
       type: Number,
       required: false,
       default: function () {
-        // return Math.PI / 20
         return 0
       }
     },
@@ -253,11 +252,12 @@ export default {
       return Math.round(val / this.stepSize) * this.stepSize
     },
     handleClick (e) {
-      this.currentKnob = 'min' // hardcoded for the sake of testing
-
       this.setNewPosition(e)
       if (this.cpIsTouchWithinSliderRange) {
         const newAngle = this.cpSliderAngle
+
+        this.defineCurrentKnob(newAngle)
+        
         if (this.currentKnob === 'min') this.animateSlider(this.minAngle, newAngle)
         else if (this.currentKnob === 'max') this.animateSlider(this.maxAngle, newAngle)
       }
@@ -265,6 +265,13 @@ export default {
     handleMouseDown (e) {
       e.preventDefault()
       this.mousePressed = true
+
+      this.setNewPosition(e)
+      if (this.cpIsTouchWithinSliderRange) {
+        const newAngle = this.cpSliderAngle
+        this.defineCurrentKnob(newAngle)
+      }
+
       window.addEventListener('mousemove', this.handleWindowMouseMove)
       window.addEventListener('mouseup', this.handleMouseUp)
     },
@@ -297,6 +304,8 @@ export default {
 
       if (this.cpIsTouchWithinSliderRange) {
         e.preventDefault()
+        const newAngle = this.cpSliderAngle
+        this.defineCurrentKnob(newAngle)
         this.updateSlider()
       }
     },
@@ -320,26 +329,20 @@ export default {
       let previousAngle = this.minAngle
       
       let minStepValue = this.fitToStep(minValue)
-      
       this.updateCurrentMinStepFromValue(minStepValue)
 
       this.minAngle = this.cpMinAngleValue
-
       this.currentMinStepValue = minStepValue
-
       this.animateSlider(previousAngle, this.minAngle)
     },
     updateFromPropMaxValue (maxValue) {
       let previousAngle = this.maxAngle
       
       let maxStepValue = this.fitToStep(maxValue)
-      
       this.updateCurrentMaxStepFromValue(maxStepValue)
 
       this.maxAngle = this.cpMaxAngleValue
-
       this.currentMaxStepValue = maxStepValue
-
       this.animateSlider(previousAngle, this.maxAngle)
     },
     updateSlider () {
@@ -406,6 +409,15 @@ export default {
       const dimensions = this.containerElement.getBoundingClientRect()
       this.relativeX = e.clientX - dimensions.left
       this.relativeY = e.clientY - dimensions.top
+    },
+    defineCurrentKnob (newAngle) {
+      if (newAngle > this.maxAngle) this.currentKnob = 'max'
+      else if (newAngle < this.minAngle) this.currentKnob = 'min'
+      else {
+        const offsetFromMax = Math.abs(this.maxAngle - newAngle)
+        const offsetFromMin = Math.abs(this.minAngle - newAngle)
+        this.currentKnob = offsetFromMax <= offsetFromMin ? 'max' : 'min'
+      }
     }
   },
   watch: {

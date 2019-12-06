@@ -5,7 +5,7 @@
       :side="300"
       :circleWidth="20"
       :knobRadius="20"
-      :minValue="sliderMinValue"
+      :minValue="sliderMinValueOrZero"
       :minKnobColor="minKnobColor"
     >
     </circle-slider>
@@ -20,8 +20,8 @@
 export default {
   data () {
     return {
-      sliderMaxValue: 39,
-      sliderMinValue: 19,
+      sliderMaxValue: 50,
+      sliderMinValue: 25,
       minKnobColor: '#EA1313'
     }
   },
@@ -32,6 +32,14 @@ export default {
       },
       set (value) {
         this.sliderMaxValue = value
+      }
+    },
+    sliderMinValueOrZero: {
+      get () {
+        return this.sliderMinValue === '' ? 0 : this.sliderMinValue
+      },
+      set (value) {
+        this.sliderMinValue = value
       }
     }
   }
