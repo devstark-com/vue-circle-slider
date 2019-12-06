@@ -253,10 +253,13 @@ export default {
       return Math.round(val / this.stepSize) * this.stepSize
     },
     handleClick (e) {
+      this.currentKnob = 'min' // hardcoded for the sake of testing
+
       this.setNewPosition(e)
       if (this.cpIsTouchWithinSliderRange) {
         const newAngle = this.cpSliderAngle
-        this.animateSlider(this.maxAngle, newAngle)
+        if (this.currentKnob === 'min') this.animateSlider(this.minAngle, newAngle)
+        else if (this.currentKnob === 'max') this.animateSlider(this.maxAngle, newAngle)
       }
     },
     handleMouseDown (e) {
@@ -341,9 +344,10 @@ export default {
     },
     updateSlider () {
       const angle = this.cpSliderAngle
-      if (Math.abs(angle - this.maxAngle) < Math.PI) {
-        this.updateAngle(angle)
-      }
+      if ((this.currentKnob === 'max') && (Math.abs(angle - this.maxAngle) < Math.PI))
+        this.updateMaxAngle(angle)
+      else if ((this.currentKnob === 'min') && (Math.abs(angle - this.minAngle) < Math.PI))
+        this.updateMinAngle(angle)
     },
     animateSlider (startAngle, endAngle) {
       const direction = startAngle < endAngle ? 1 : -1
