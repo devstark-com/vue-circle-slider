@@ -6,13 +6,14 @@
       :circleWidth="20"
       :knobRadius="20"
       :minValue="sliderMinValueOrZero"
+      @input_min="sliderMinValue = 0"
       :minKnobColor="minKnobColor"
     >
     </circle-slider>
     <div class="value"> {{ sliderMaxValue }} </div>
     <input type="number" v-model.number="sliderMaxValue">
-    <input type="number" v-model.number="sliderMinValue">
-    <div> {{ sliderMinValue }} </div>
+    <input  type="number" v-model.number="sliderMinValue">
+    <div class="min-value"> {{ sliderMinValue }} </div>
   </div>
 </template>
 
@@ -66,9 +67,17 @@ export default {
     margin-top: 20px;
   }
 
+  .min-value {
+    font-size: 20px;
+    margin-top: 20px;
+  }
+
   input {
     height: 30px;
     font-size: 20px;
     margin-top: 30px;
   }
 </style>
+      
+
+// @input_min="sliderMinValue = 0"

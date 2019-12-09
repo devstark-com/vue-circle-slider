@@ -35,8 +35,8 @@ export default {
     let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
     this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpKnobRadius * 2) / 2
     
-    this.updateFromPropMinValue(this.minValue)
     this.updateFromPropMaxValue(this.value)
+    this.currentMinStepIndex > this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
   },
   mounted () {
     this.containerElement = this.$refs._svg
@@ -255,7 +255,6 @@ export default {
       this.setNewPosition(e)
       if (this.cpIsTouchWithinSliderRange) {
         const newAngle = this.cpSliderAngle
-
         this.defineCurrentKnob(newAngle)
         
         if (this.currentKnob === 'min') this.animateSlider(this.minAngle, newAngle)
@@ -284,6 +283,8 @@ export default {
     },
     handleWindowMouseMove (e) {
       e.preventDefault()
+      if (this.minAngle >= this.maxAngle) return
+
       if (this.mousemoveTicks < 5) {
         this.mousemoveTicks++
         return
@@ -376,7 +377,7 @@ export default {
         }
         if (this.steps[stepIndex] === this.value) {
           this.currentMaxStepIndex = stepIndex
-          break
+          // break
         }
       }
     },
@@ -418,6 +419,12 @@ export default {
         const offsetFromMin = Math.abs(this.minAngle - newAngle)
         this.currentKnob = offsetFromMax <= offsetFromMin ? 'max' : 'min'
       }
+    },
+    setDefaultMinValue () {
+      const defaultMinValue = 0
+      this.updateFromPropMinValue(defaultMinValue)
+      this.$emit('input_min') 
+      alert('"Min" value cannot be greater than "Max" value. Please set the correct value.')  
     }
   },
   watch: {
@@ -429,7 +436,7 @@ export default {
     minValue (val) {
       if (val === this.currentMinStepValue) return 
       this.currentKnob = 'min'
-      this.updateFromPropMinValue(val)
+      this.currentMinStepIndex >= this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(val)
     }
   }
 }
