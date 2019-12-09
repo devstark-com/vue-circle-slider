@@ -6,7 +6,7 @@
       :circleWidth="20"
       :knobRadius="20"
       :minValue="sliderMinValueOrZero"
-      @input_min="sliderMinValue = 0"
+      @inputMin=" value => sliderMinValue = value "
       :minKnobColor="minKnobColor"
     >
     </circle-slider>

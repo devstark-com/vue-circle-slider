@@ -310,11 +310,15 @@ export default {
         this.updateSlider()
       }
     },
-    updateMinAngle (angle) {
+    updateMinAngle (angle, isAnimationFinished) {
       this.updateCurrentMinStepFromAngle(angle)
       this.minAngle = this.cpMinAngleValue
 
       this.currentMinStepValue = this.cpCurrentMinStep
+        
+      if (isAnimationFinished) {
+        this.$emit('inputMin', this.currentMinStepValue) 
+      }
     },
     updateMaxAngle (angle, isAnimationFinished) {
       this.updateCurrentMaxStepFromAngle(angle)
@@ -360,11 +364,11 @@ export default {
       const animate = () => {
         if (Math.abs(endAngle - startAngle) < Math.abs(2 * curveAngleMovementUnit)) {
           if (this.currentKnob === 'max') this.updateMaxAngle(endAngle, true)
-          else if (this.currentKnob === 'min') this.updateMinAngle(endAngle)
+          else if (this.currentKnob === 'min') this.updateMinAngle(endAngle, true)
         } else {
           const newAngle = startAngle + curveAngleMovementUnit
           if (this.currentKnob === 'max') this.updateMaxAngle(newAngle, false)
-          else if (this.currentKnob === 'min') this.updateMinAngle(newAngle)
+          else if (this.currentKnob === 'min') this.updateMinAngle(newAngle, false)
           this.animateSlider(newAngle, endAngle)
         }
       }
@@ -423,7 +427,7 @@ export default {
     setDefaultMinValue () {
       const defaultMinValue = 0
       this.updateFromPropMinValue(defaultMinValue)
-      this.$emit('input_min') 
+      this.$emit('inputMin', defaultMinValue) 
       alert('"Min" value cannot be greater than "Max" value. Please set the correct value.')  
     }
   },
