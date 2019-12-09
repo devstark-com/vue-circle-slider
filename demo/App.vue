@@ -21,9 +21,9 @@
 export default {
   data () {
     return {
-      sliderMaxValue: 50,
-      sliderMinValue: 25,
-      minKnobColor: '#EA1313'
+      sliderMaxValue: 0,
+      sliderMinValue: 0,
+      // minKnobColor: '#EA1313'
     }
   },
   computed: {

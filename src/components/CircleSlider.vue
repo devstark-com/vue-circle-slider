@@ -219,7 +219,7 @@ export default {
       return (Math.min(
         this.startAngleOffset + this.cpAngleUnit * this.currentMinStepIndex,
         Math.PI * 2 - Number.EPSILON
-      )) - 0.00001 // correct for 100% value
+      )) // - 0.00001 // correct for 100% value
     },
     cpMaxAngleValue () {
       return (Math.min(
