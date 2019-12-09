@@ -9,7 +9,6 @@
       :circleWidth="20"
       :knobRadius="20"
       :stepSize="1"
-      :counterClockwise="true"
     >
     </circle-slider>
     <div class="value"> {{ sliderValue }} </div>
