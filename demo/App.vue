@@ -8,6 +8,7 @@
       :minKnobRadius="20"
       :minValue="sliderMinValueOrZero"
       @inputMin=" value => sliderMinValue = value "
+      :rangeSlider="true"
     >
     </circle-slider>
     <div class="value"> {{ sliderMaxValue }} </div>
