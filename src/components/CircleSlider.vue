@@ -9,8 +9,8 @@
       <g>
         <circle :stroke="circleColor" fill="none" :stroke-width="cpMainCircleStrokeWidth" :cx="cpCenter" :cy="cpCenter" :r="radius"></circle>
         <path :stroke="progressColor" fill="none" :stroke-width="cpPathStrokeWidth" :d="cpPathD"></path>
-        <circle :fill="maxKnobColor" :r="cpKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
-        <circle :fill="minKnobColor" :r="cpKnobRadius" :cx="cpMinKnobX" :cy="cpMinKnobY"></circle>
+        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
+        <circle :fill="minKnobColor" :r="cpMinKnobRadius" :cx="cpMinKnobX" :cy="cpMinKnobY"></circle>
       </g>
     </svg>
   </div>
@@ -33,7 +33,7 @@ export default {
     this.currentMaxStepValue = this.cpCurrentMaxStep
 
     let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
-    this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpKnobRadius * 2) / 2
+    this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
     
     this.updateFromPropMaxValue(this.value)
     this.currentMinStepIndex > this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
@@ -101,12 +101,22 @@ export default {
       required: false,
       default: '#00be7e'
     },
-    knobRadius: {
+    minKnobRadius: {
       type: Number,
       required: false,
       default: null
     },
-    knobRadiusRel: {
+    minKnobRadiusRel: {
+      type: Number,
+      required: false,
+      default: 7
+    },
+    maxKnobRadius: {
+      type: Number,
+      required: false,
+      default: null
+    },
+    maxKnobRadiusRel: {
       type: Number,
       required: false,
       default: 7
@@ -195,8 +205,11 @@ export default {
     cpPathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
     },
-    cpKnobRadius () {
-      return this.knobRadius || (this.side / 2) / this.knobRadiusRel
+    cpMinKnobRadius () {
+      return this.minKnobRadius || (this.side / 2) / this.minKnobRadiusRel
+    },
+    cpMaxKnobRadius () {
+      return this.maxKnobRadius || (this.side / 2) / this.maxKnobRadiusRel
     },
     cpPathD () {
       let parts = []
