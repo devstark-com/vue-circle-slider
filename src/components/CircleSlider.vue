@@ -9,8 +9,8 @@
       <g>
         <circle :stroke="circleColor" fill="none" :stroke-width="cpMainCircleStrokeWidth" :cx="cpCenter" :cy="cpCenter" :r="radius"></circle>
         <path :stroke="progressColor" fill="none" :stroke-width="cpPathStrokeWidth" :d="cpPathD"></path>
-        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
         <circle v-if="rangeSlider" :fill="minKnobColor" :r="cpMinKnobRadius" :cx="cpMinKnobX" :cy="cpMinKnobY"></circle>
+        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
       </g>
     </svg>
   </div>
@@ -498,6 +498,11 @@ export default {
       const defaultMinValue = this.currentMaxStepValue
       this.updateFromPropMinValue(defaultMinValue)
       this.$emit('inputMin', defaultMinValue) 
+    },
+    setDefaultMaxValue () {
+      const defaultMaxValue = this.currentMinStepValue
+      this.updateFromPropMaxValue(defaultMaxValue)
+      this.$emit('input', defaultMaxValue) 
     }
   },
   watch: {
@@ -505,11 +510,13 @@ export default {
       if (val === this.currentMaxStepValue) return 
       this.currentKnob = 'max'
       this.updateFromPropMaxValue(val)
+      if (this.currentMaxStepIndex < this.currentMinStepIndex) this.setDefaultMaxValue()
     },
     minValue (val) {
       if (!this.rangeSlider || val === this.currentMinStepValue) return 
       this.currentKnob = 'min'
-      this.currentMinStepIndex >= this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(val)
+      this.updateFromPropMinValue(val)
+      if (this.currentMinStepIndex > this.currentMaxStepIndex) this.setDefaultMinValue()
     }
   }
 }

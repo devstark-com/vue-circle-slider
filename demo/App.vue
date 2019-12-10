@@ -11,6 +11,7 @@
       :minValue="sliderMinValueOrZero"
       @inputMin=" value => sliderMinValue = value "
       :rangeSlider="true"
+      :minKnobColor="minKnobColor"
     >
     </circle-slider>
     <div class="value"> {{ sliderMaxValue }} </div>
@@ -26,7 +27,7 @@ export default {
     return {
       sliderMaxValue: 0,
       sliderMinValue: 0,
-      // minKnobColor: '#EA1313'
+      minKnobColor: '#EA1313'
     }
   },
   computed: {
