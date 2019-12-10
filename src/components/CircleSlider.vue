@@ -204,33 +204,28 @@ export default {
     cpCenter () {
       return this.side / 2
     },
-    cpAngle () {
-      if (this.counterClockwise) return (this.angle + Math.PI / 2) - this.cpStartPositionRadians
-      return this.angle + this.cpStartPositionRadians
+    cpMinAngle () {
+      if (this.counterClockwise) return (this.minAngle + Math.PI / 2) - this.cpStartPositionRadians
+      return this.minAngle + this.cpStartPositionRadians
     },
-    // cpMinAngle () {
-    //   return this.minAngle + Math.PI / 2
-    // },
-    // cpMaxAngle () {
-    //   return this.maxAngle + Math.PI / 2
-    // },
+    cpMaxAngle () {
+      if (this.counterClockwise) return (this.maxAngle + Math.PI / 2) - this.cpStartPositionRadians
+      return this.maxAngle + this.cpStartPositionRadians
+    },
     cpMainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
     cpPathDirection () {
-      if (this.counterClockwise) return (this.angle < Math.PI) ? 0 : 1
-      return ((this.angle + Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
-      // return (this.cpMaxAngle - (this.cpMinAngle - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
+      if (this.counterClockwise) return (this.maxAngle - this.minAngle < Math.PI) ? 0 : 1
+      return (this.cpMaxAngle - (this.cpMinAngle - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
     cpPathX () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpAngle)
-      return this.cpCenter + this.radius * Math.cos(this.cpAngle)
-      // return this.cpCenter + this.radius * Math.cos(this.cpMaxAngle)
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpMaxAngle)
+      return this.cpCenter + this.radius * Math.cos(this.cpMaxAngle)
     },
     cpPathY () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpAngle)
-      return this.cpCenter + this.radius * Math.sin(this.cpAngle)
-      // return this.cpCenter + this.radius * Math.sin(this.cpMaxAngle)
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpMaxAngle)
+      return this.cpCenter + this.radius * Math.sin(this.cpMaxAngle)
     }, 
     cpPathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
@@ -241,18 +236,10 @@ export default {
     cpMaxKnobRadius () {
       return this.maxKnobRadius || (this.side / 2) / this.maxKnobRadiusRel
     },
-    cpKnobStartX () {
-      return this.cpCenter + this.radius * Math.cos(this.cpStartPositionRadians)
-    },
-    cpKnobStartY () {
-      return this.cpCenter + this.radius * Math.sin(this.cpStartPositionRadians)
-    },  
     cpPathD () {
       let parts = []
-      parts.push('M' + this.cpKnobStartX)
-      parts.push(this.cpKnobStartY)
-      // parts.push('M' + this.cpMinKnobX)
-      // parts.push(this.cpMinKnobY)
+      parts.push('M' + this.cpMinKnobX)
+      parts.push(this.cpMinKnobY)
       parts.push('A')
       parts.push(this.radius)
       parts.push(this.radius)
@@ -270,7 +257,7 @@ export default {
       return (Math.min(
         this.startAngleOffset + this.cpAngleUnit * this.currentMinStepIndex,
         Math.PI * 2 - Number.EPSILON
-      )) // - 0.00001 // correct for 100% value
+      ))
     },
     cpMaxAngleValue () {
       return (Math.min(
@@ -294,13 +281,15 @@ export default {
     },
     cpStartPositionRadians () {
       return this.startPosition / 180 * Math.PI
+    },
+    cpMinKnobX () {
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpMinAngle)
+      return this.cpCenter + this.radius * Math.cos(this.cpMinAngle)
+    },
+    cpMinKnobY () {
+      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpMinAngle)
+      return this.cpCenter + this.radius * Math.sin(this.cpMinAngle)
     }
-    // cpMinKnobX () {
-    //   return this.cpCenter + this.radius * Math.cos(this.cpMinAngle)
-    // },
-    // cpMinKnobY () {
-    //   return this.cpCenter + this.radius * Math.sin(this.cpMinAngle)
-    // }
   },
   methods: {
     fitToStep (val) {
@@ -351,7 +340,7 @@ export default {
       e.preventDefault()
       const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
       if ((this.currentStepValue === 0 && e.wheelDelta < 0) || (this.currentStepValue === 100 && e.wheelDelta > 0)) return
-      this.updateFromPropValue(valueFromScroll)
+      this.updateFromPropMaxValue(valueFromScroll)
     },
     handleTouchMove (e) {
       this.$emit('touchmove')
@@ -406,10 +395,6 @@ export default {
       let maxStepValue = this.fitToStep(maxValue)
       this.updateCurrentMaxStepFromValue(maxStepValue)
 
-      // this.angle = this.cpAngleValue
-      // this.currentStepValue = stepValue
-      // this.animateSlider(previousAngle, this.angle)
-      
       this.maxAngle = this.cpMaxAngleValue
       this.currentMaxStepValue = maxStepValue
       this.animateSlider(previousAngle, this.maxAngle)
@@ -445,7 +430,6 @@ export default {
         }
         if (this.steps[stepIndex] === this.value) {
           this.currentMaxStepIndex = stepIndex
-          // break
         }
       }
     },
@@ -485,7 +469,7 @@ export default {
     },
     calculateRedundantAngle () {
       const totalAngle = Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3
-      if (!this.redundantAngle) {
+      if ((this.cpStartPositionRadians !== Math.PI / 2) && !this.redundantAngle) {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
     },

@@ -4,13 +4,13 @@
       v-model="sliderMaxValueOrZero"
       :side="300"
       :circleWidth="20"
-      :counterClockwise="false"
-      :startPosition="90"
+      :counterClockwise="true"
+      :startPosition="200"
       :maxKnobRadius="20"
       :minKnobRadius="20"
       :minValue="sliderMinValueOrZero"
       @inputMin=" value => sliderMinValue = value "
-      :rangeSlider="false"
+      :rangeSlider="true"
     >
     </circle-slider>
     <div class="value"> {{ sliderMaxValue }} </div>
