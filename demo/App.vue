@@ -8,7 +8,8 @@
       :side="300"
       :circleWidth="20"
       :knobRadius="20"
-      :startPosition="300"
+      :counterClockwise="true"
+      :startPosition="150"
     >
     </circle-slider>
     <div class="value"> {{ sliderValue }} </div>

@@ -170,16 +170,14 @@ export default {
       return this.side / 2
     },
     cpAngle () {
-      if (this.counterClockwise) return this.angle
-      // return this.angle + Math.PI / 2 
+      if (this.counterClockwise) return (this.angle + Math.PI / 2) - this.cpStartPositionRadians
       return this.angle + this.cpStartPositionRadians
     },
     cpMainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
     cpPathDirection () {
-      if (this.counterClockwise) return (this.cpAngle < Math.PI) ? 0 : 1
-      // return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
+      if (this.counterClockwise) return (this.angle < Math.PI) ? 0 : 1
       return ((this.angle + Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
     cpPathX () {
@@ -211,10 +209,9 @@ export default {
       parts.push(this.radius)
       parts.push(0)
       parts.push(this.cpPathDirection)
-      parts.push( this.counterClockwise ? 0 : 1 )
+      parts.push(this.counterClockwise ? 0 : 1 )
       parts.push(this.cpPathX)
       parts.push(this.cpPathY)
-
       return parts.join(' ')
     },
     cpAngleUnit () {
@@ -224,7 +221,8 @@ export default {
       return (Math.min(
         this.startAngleOffset + this.cpAngleUnit * this.currentStepIndex,
         Math.PI * 2 - Number.EPSILON
-      )) - 0.00001 // correct for 100% value
+      )) - 0.0001 // correct for 100% value
+      // - 0.00001 // correct for 100% value
     },
     cpCurrentStep () {
       return this.steps[this.currentStepIndex]
@@ -270,9 +268,14 @@ export default {
         this.mousemoveTicks++
         return
       }
-
       this.setNewPosition(e)
       this.updateSlider()
+    },
+    handleWheelScroll (e) {
+      e.preventDefault()
+      const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
+      if ((this.currentStepValue === 0 && e.wheelDelta < 0) || (this.currentStepValue === 100 && e.wheelDelta > 0)) return
+      this.updateFromPropValue(valueFromScroll)
     },
     handleTouchMove (e) {
       this.$emit('touchmove')
@@ -327,7 +330,6 @@ export default {
           this.animateSlider(newAngle, endAngle)
         }
       }
-
       window.requestAnimationFrame(animate)
     },
     defineInitialCurrentStepIndex () {
@@ -345,7 +347,6 @@ export default {
           return
         }
       }
-
       this.currentStepIndex = this.cpStepsLength
     },
     updateCurrentStepFromAngle (angle) {
@@ -355,24 +356,15 @@ export default {
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
       if (this.counterClockwise) {
-        // this.relativeX = dimensions.right - e.clientX
         this.relativeX = dimensions.right - ( e.clientX || e.x )
       } else this.relativeX = ( e.clientX || e.x ) - dimensions.left
-      
-      // this.relativeY = e.clientY - dimensions.top
       this.relativeY = ( e.clientY || e.y ) - dimensions.top
 
       this.calculateRedundantAngle()
     },
-    handleWheelScroll (e) {
-      e.preventDefault()
-      const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
-      this.updateFromPropValue(valueFromScroll)
-    },
     calculateRedundantAngle () {
       const totalAngle = Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3
-      
-      if ((this.cpStartPositionRadians !== Math.PI / 2) && !this.redundantAngle) {
+      if (!this.redundantAngle) {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
     },
