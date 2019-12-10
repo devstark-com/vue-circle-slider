@@ -338,9 +338,12 @@ export default {
     },
     handleWheelScroll (e) {
       e.preventDefault()
+      if (this.rangeSlider) return
+      
+      this.currentKnob = 'max'
       const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
-      if ((this.currentStepValue === 0 && e.wheelDelta < 0) || (this.currentStepValue === 100 && e.wheelDelta > 0)) return
-      this.updateFromPropMaxValue(valueFromScroll)
+      if ((this.currentMaxStepValue === 0 && e.wheelDelta < 0) || (this.currentMaxStepValue === 100 && e.wheelDelta > 0)) return
+      this.updateFromPropMaxValue(valueFromScroll)      
     },
     handleTouchMove (e) {
       this.$emit('touchmove')

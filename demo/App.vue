@@ -10,7 +10,7 @@
       :minKnobRadius="20"
       :minValue="sliderMinValueOrZero"
       @inputMin=" value => sliderMinValue = value "
-      :rangeSlider="true"
+      :rangeSlider="false"
       :minKnobColor="minKnobColor"
     >
     </circle-slider>
