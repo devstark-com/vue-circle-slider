@@ -327,7 +327,7 @@ export default {
     },
     handleWindowMouseMove (e) {
       e.preventDefault()
-      if (this.minAngle >= this.maxAngle) return
+      if (this.minAngle >= this.maxAngle && this.maxAngle > 0) return
 
       if (this.mousemoveTicks < 5) {
         this.mousemoveTicks++
