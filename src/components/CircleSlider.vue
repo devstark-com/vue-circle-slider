@@ -35,19 +35,22 @@ export default {
   mounted () {
     this.containerElement = this.$refs._svg
     this.sliderTolerance = this.radius / 2
-    this.setNewPosition({x: 0, y: 0})
-
+    this.setInitialPosition()
     this.containerElement.addEventListener('wheel', this.handleWheelScroll)
   },
   beforeDestroy () {
     this.containerElement.removeEventListener('wheel', this.handleWheelScroll)
   },
   props: {
+    startPosition: {
+      type: Number,
+      required: false,
+      default: 90 // degrees 
+    },
     startAngleOffset: {
       type: Number,
       required: false,
       default: function () {
-        // return Math.PI / 20
         return 0
       }
     },
@@ -150,7 +153,8 @@ export default {
       length: 0,
       sliderTolerance: 0,
       relativeX: 0,
-      relativeY: 0
+      relativeY: 0,
+      redundantAngle: 0
     }
   },
   computed: {
@@ -167,14 +171,16 @@ export default {
     },
     cpAngle () {
       if (this.counterClockwise) return this.angle
-      return this.angle + Math.PI / 2 
+      // return this.angle + Math.PI / 2 
+      return this.angle + this.cpStartPositionRadians
     },
     cpMainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
     cpPathDirection () {
       if (this.counterClockwise) return (this.cpAngle < Math.PI) ? 0 : 1
-      return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
+      // return (this.cpAngle < 3 / 2 * Math.PI) ? 0 : 1
+      return ((this.angle + Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
     cpPathX () {
       if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpAngle)
@@ -190,10 +196,16 @@ export default {
     cpKnobRadius () {
       return this.knobRadius || (this.side / 2) / this.knobRadiusRel
     },
+    cpKnobStartX () {
+      return this.cpCenter + this.radius * Math.cos(this.cpStartPositionRadians)
+    },
+    cpKnobStartY () {
+      return this.cpCenter + this.radius * Math.sin(this.cpStartPositionRadians)
+    },  
     cpPathD () {
       let parts = []
-      parts.push('M' + this.cpCenter)
-      parts.push(this.cpCenter + this.radius)
+      parts.push('M' + this.cpKnobStartX)
+      parts.push(this.cpKnobStartY)
       parts.push('A')
       parts.push(this.radius)
       parts.push(this.radius)
@@ -218,11 +230,14 @@ export default {
       return this.steps[this.currentStepIndex]
     },
     cpSliderAngle () {
-      return (Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + Math.PI * 3 / 2) % (Math.PI * 2)
+      return (Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3 - this.redundantAngle + this.startAngleOffset) % (Math.PI * 2)
     },
     cpIsTouchWithinSliderRange () {
       const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.cpCenter), 2) + Math.pow(Math.abs(this.relativeY - this.cpCenter), 2))
       return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
+    },
+    cpStartPositionRadians () {
+      return this.startPosition / 180 * Math.PI
     }
   },
   methods: {
@@ -291,7 +306,6 @@ export default {
 
       this.angle = this.cpAngleValue
       this.currentStepValue = stepValue
-      // this.$emit('input', this.currentStepValue)
       this.animateSlider(previousAngle, this.angle)
     },
     updateSlider () {
@@ -341,15 +355,33 @@ export default {
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
       if (this.counterClockwise) {
-        this.relativeX = dimensions.right - e.clientX
-      } else this.relativeX = e.clientX - dimensions.left
+        // this.relativeX = dimensions.right - e.clientX
+        this.relativeX = dimensions.right - ( e.clientX || e.x )
+      } else this.relativeX = ( e.clientX || e.x ) - dimensions.left
       
-      this.relativeY = e.clientY - dimensions.top
+      // this.relativeY = e.clientY - dimensions.top
+      this.relativeY = ( e.clientY || e.y ) - dimensions.top
+
+      this.calculateRedundantAngle()
     },
     handleWheelScroll (e) {
       e.preventDefault()
       const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
       this.updateFromPropValue(valueFromScroll)
+    },
+    calculateRedundantAngle () {
+      const totalAngle = Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3
+      
+      if ((this.cpStartPositionRadians !== Math.PI / 2) && !this.redundantAngle) {
+        this.redundantAngle = totalAngle - (Math.PI * 2)
+      }
+    },
+    setInitialPosition () {
+      const dimensions = this.containerElement.getBoundingClientRect()
+      const x = (this.cpPathX + dimensions.left).toFixed(0)
+      const y = (this.cpPathY + dimensions.top).toFixed(0)
+
+      this.setNewPosition({x, y})
     }
   },
   watch: {
