@@ -514,9 +514,6 @@ export default {
       const defaultMaxValue = this.currentMaxStepValue
       this.updateFromPropMaxValue(defaultMaxValue)
       this.$emit('input', defaultMaxValue) 
-    },
-    waitFinalMaxValueFromInput () {
-      _debounce(this.setDefaultMaxValue, 5000)()
     }
   },
   watch: {
@@ -524,7 +521,9 @@ export default {
       if (val === this.currentMaxStepValue) return 
       this.currentKnob = 'max'
 
-      if (val < this.minValue) this.waitFinalMaxValueFromInput()
+      const waitFinalMaxValueFromInput = _debounce(this.setDefaultMaxValue, 5000)
+      // waitFinalMaxValueFromInput.cancel()
+      if (val < this.minValue) waitFinalMaxValueFromInput()
       else this.updateFromPropMaxValue(val)
     },
     minValue (val) {
