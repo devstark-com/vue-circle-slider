@@ -404,6 +404,8 @@ export default {
     },
     updateSlider () {
       const angle = this.cpSliderAngle
+      this.defineCurrentKnob(angle)
+
       if ((this.currentKnob === 'max') && (Math.abs(angle - this.maxAngle) < Math.PI))
         this.updateMaxAngle(angle)
       else if ((this.currentKnob === 'min') && (Math.abs(angle - this.minAngle) < Math.PI))
@@ -496,6 +498,11 @@ export default {
         const offsetFromMin = Math.abs(this.minAngle - newAngle)
         this.currentKnob = offsetFromMax <= offsetFromMin ? 'max' : 'min'
       }
+      // Don't move any knob when minKnob is at 0 position and 
+      // when it is clicked on its half which overflows "0"
+      const halfKnobAngleInDegrees = this.cpMinKnobRadius / ((2 * Math.PI * this.radius) / 360)
+      const halfKnobAngleInRadians = halfKnobAngleInDegrees / 180 * Math.PI
+      if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
     setDefaultMinValue () {
       const defaultMinValue = this.currentMaxStepValue
