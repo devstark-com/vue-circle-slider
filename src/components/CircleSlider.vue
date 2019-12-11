@@ -16,6 +16,7 @@
   </div>
 </template>
 <script>
+import _debounce from "lodash.debounce"
 export default {
   name: 'CircleSlider',
   created () {
@@ -513,13 +514,18 @@ export default {
       const defaultMaxValue = this.currentMaxStepValue
       this.updateFromPropMaxValue(defaultMaxValue)
       this.$emit('input', defaultMaxValue) 
+    },
+    waitFinalMaxValueFromInput () {
+      _debounce(this.setDefaultMaxValue, 5000)()
     }
   },
   watch: {
     value (val) {
       if (val === this.currentMaxStepValue) return 
       this.currentKnob = 'max'
-      val < this.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val)
+
+      if (val < this.minValue) this.waitFinalMaxValueFromInput()
+      else this.updateFromPropMaxValue(val)
     },
     minValue (val) {
       if (!this.rangeSlider || val === this.currentMinStepValue) return 
