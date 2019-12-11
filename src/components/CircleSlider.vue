@@ -34,7 +34,7 @@ export default {
 
     let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
     this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
-    
+
     this.updateFromPropMaxValue(this.value)
     this.currentMinStepIndex > this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
   },
@@ -505,12 +505,12 @@ export default {
       if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
     setDefaultMinValue () {
-      const defaultMinValue = this.currentMaxStepValue
+      const defaultMinValue = this.currentMinStepValue
       this.updateFromPropMinValue(defaultMinValue)
       this.$emit('inputMin', defaultMinValue) 
     },
     setDefaultMaxValue () {
-      const defaultMaxValue = this.currentMinStepValue
+      const defaultMaxValue = this.currentMaxStepValue
       this.updateFromPropMaxValue(defaultMaxValue)
       this.$emit('input', defaultMaxValue) 
     }
@@ -519,14 +519,12 @@ export default {
     value (val) {
       if (val === this.currentMaxStepValue) return 
       this.currentKnob = 'max'
-      this.updateFromPropMaxValue(val)
-      if (this.currentMaxStepIndex < this.currentMinStepIndex) this.setDefaultMaxValue()
+      val < this.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val)
     },
     minValue (val) {
       if (!this.rangeSlider || val === this.currentMinStepValue) return 
       this.currentKnob = 'min'
-      this.updateFromPropMinValue(val)
-      if (this.currentMinStepIndex > this.currentMaxStepIndex) this.setDefaultMinValue()
+      val > this.value ? this.setDefaultMinValue() : this.updateFromPropMinValue(val)
     }
   }
 }
