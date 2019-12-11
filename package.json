@@ -24,7 +24,8 @@
     "src"
   ],
   "dependencies": {
-    "core-js": "^3.3.2"
+    "core-js": "^3.3.2",
+    "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.0.0",
