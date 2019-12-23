@@ -3,15 +3,14 @@
     <circle-slider 
       v-model="sliderMaxValueOrZero"
       :side="300"
-      :circleWidth="20"
-      :counterClockwise="false"
-      :startPosition="90"
-      :maxKnobRadius="20"
-      :minKnobRadius="20"
-      :minValue="sliderMinValueOrZero"
-      @inputMin=" value => sliderMinValue = value "
-      :rangeSlider="true"
-      :minKnobColor="minKnobColor"
+      :circle-width="20"
+      :counter-clockwise="true"
+      :start-position="200"
+      :max-knob-radius="20"
+      :min-knob-radius="20"
+      :min-value.sync="sliderMinValueOrZero"
+      :range-slider="true"
+      :min-knob-color="minKnobColor"
     >
     </circle-slider>
     <div class="value"> {{ sliderMaxValue }} </div>

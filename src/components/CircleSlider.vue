@@ -17,6 +17,8 @@
 </template>
 <script>
 import _debounce from "lodash.debounce"
+// import _throttle from "lodash.throttle"
+
 export default {
   name: 'CircleSlider',
   created () {
@@ -370,8 +372,11 @@ export default {
       this.currentMinStepValue = this.cpCurrentMinStep
         
       if (isAnimationFinished) {
-        this.$emit('inputMin', this.currentMinStepValue) 
+        this.$emit('update:minValue', this.currentMinStepValue) 
       }
+      // const emitValue = () => this.$emit('inputMin', this.currentMinStepValue)
+      // const throttled = _throttle(emitValue, 500)
+      // throttled()
     },
     updateMaxAngle (angle, isAnimationFinished) {
       this.updateCurrentMaxStepFromAngle(angle)
@@ -382,6 +387,9 @@ export default {
       if (isAnimationFinished) {
         this.$emit('input', this.currentMaxStepValue)
       }
+      // const emitValue = () => this.$emit('input', this.currentMaxStepValue)
+      // const throttled = _throttle(emitValue, 1000)
+      // throttled()
     },
     updateFromPropMinValue (minValue) {
       let previousAngle = this.minAngle
