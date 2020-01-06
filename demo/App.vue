@@ -4,12 +4,12 @@
       v-model="sliderMaxValueOrZero"
       :side="300"
       :circle-width="20"
-      :counter-clockwise="true"
-      :start-position="200"
+      :counter-clockwise="false"
+      :start-angle-offset="250"
       :max-knob-radius="20"
       :min-knob-radius="20"
       :min-value.sync="sliderMinValueOrZero"
-      :range-slider="true"
+      :range-slider="false"
       :min-knob-color="minKnobColor"
     >
     </circle-slider>

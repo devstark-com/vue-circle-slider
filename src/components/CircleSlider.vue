@@ -7,10 +7,10 @@
       @mouseup="handleMouseUp"
     >
       <g>
-        <circle :stroke="circleColor" fill="none" :stroke-width="cpMainCircleStrokeWidth" :cx="cpCenter" :cy="cpCenter" :r="radius"></circle>
-        <path :stroke="progressColor" fill="none" :stroke-width="cpPathStrokeWidth" :d="cpPathD"></path>
-        <circle v-if="rangeSlider" :fill="minKnobColor" :r="cpMinKnobRadius" :cx="cpMinKnobX" :cy="cpMinKnobY"></circle>
-        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="cpPathX" :cy="cpPathY"></circle>
+        <circle :stroke="circleColor" fill="none" :stroke-width="mainCircleStrokeWidth" :cx="center" :cy="center" :r="radius"></circle>
+        <path :stroke="progressColor" fill="none" :stroke-width="pathStrokeWidth" :d="pathD"></path>
+        <circle v-if="rangeSlider" :fill="minKnobColor" :r="cpMinKnobRadius" :cx="minKnobX" :cy="minKnobY"></circle>
+        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="pathX" :cy="pathY"></circle>
       </g>
     </svg>
   </div>
@@ -29,13 +29,13 @@ export default {
 
     this.defineInitialCurrentStepIndex()
 
-    this.minAngle = this.cpMinAngleValue
-    this.maxAngle = this.cpMaxAngleValue
+    this.minAngle = this.minAngleValue
+    this.maxAngle = this.maxAngleValue
 
-    this.currentMinStepValue = this.cpCurrentMinStep
-    this.currentMaxStepValue = this.cpCurrentMaxStep
+    this.currentMinStepValue = this.currentMinStep
+    this.currentMaxStepValue = this.currentMaxStep
 
-    let maxCurveWidth = Math.max(this.cpMainCircleStrokeWidth, this.cpPathStrokeWidth)
+    let maxCurveWidth = Math.max(this.mainCircleStrokeWidth, this.pathStrokeWidth)
     this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
 
     this.updateFromPropMaxValue(this.value)
@@ -51,126 +51,96 @@ export default {
     this.containerElement.removeEventListener('wheel', this.handleWheelScroll)
   },
   props: {
-    startPosition: {
-      type: Number,
-      required: false,
-      default: 90 // degrees 
-    },
     startAngleOffset: {
       type: Number,
-      required: false,
-      default: function () {
-        return 0
-      }
+      default: 90 // degrees 
     },
     value: {
       type: Number,
-      required: false,
       default: 0
     },
     minValue: {
       type: Number,
-      required: false,
       default: 0
     },
     side: {
       type: Number,
-      required: false,
       default: 100
     },
     stepSize: {
       type: Number,
-      required: false,
       default: 1
     },
     min: {
       type: Number,
-      required: false,
       default: 0
     },
     max: {
       type: Number,
-      required: false,
       default: 100
     },
     circleColor: {
       type: String,
-      required: false,
       default: '#334860'
     },
     progressColor: {
       type: String,
-      required: false,
       default: '#00be7e'
     },
     minKnobColor: {
       type: String,
-      required: false,
       default: '#00be7e'
     },
     maxKnobColor: {
       type: String,
-      required: false,
       default: '#00be7e'
     },
     minKnobRadius: {
       type: Number,
-      required: false,
       default: null
     },
     minKnobRadiusRel: {
       type: Number,
-      required: false,
       default: 7
     },
     maxKnobRadius: {
       type: Number,
-      required: false,
       default: null
     },
     maxKnobRadiusRel: {
       type: Number,
-      required: false,
       default: 7
     },
     circleWidth: {
       type: Number,
-      required: false,
       default: null
     },
     circleWidthRel: {
       type: Number,
-      required: false,
       default: 20
     },
     progressWidth: {
       type: Number,
-      required: false,
       default: null
     },
     progressWidthRel: {
       type: Number,
-      required: false,
       default: 10
     },
     counterClockwise: {
       type: Boolean,
-      required: false,
       default: false
     },
     rangeSlider: {
       type: Boolean,
-      required: false,
       default: false
     }
     // limitMin: {
     //   type: Number,
-    //   required: false,
     //   default: null
     // },
     // limitMax: {
     //   type: Number,
-    //   required: false,
     //   default: null
     // }
   },
@@ -196,41 +166,36 @@ export default {
     }
   },
   computed: {
-    // cpStartAngleOffset () {
-    //   if (!this.minStepLimit) {
-    //     return 0
-    //   }
-    // },
-    cpStepsLength () {
+    stepsLength () {
       return this.steps.length - 1
     },
-    cpCenter () {
+    center () {
       return this.side / 2
     },
     cpMinAngle () {
-      if (this.counterClockwise) return (this.minAngle + Math.PI / 2) - this.cpStartPositionRadians
-      return this.minAngle + this.cpStartPositionRadians
+      if (this.counterClockwise) return (this.minAngle + Math.PI / 2) - this.startAngleOffsetRadians
+      return this.minAngle + this.startAngleOffsetRadians
     },
     cpMaxAngle () {
-      if (this.counterClockwise) return (this.maxAngle + Math.PI / 2) - this.cpStartPositionRadians
-      return this.maxAngle + this.cpStartPositionRadians
+      if (this.counterClockwise) return (this.maxAngle + Math.PI / 2) - this.startAngleOffsetRadians
+      return this.maxAngle + this.startAngleOffsetRadians
     },
-    cpMainCircleStrokeWidth () {
+    mainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
-    cpPathDirection () {
+    pathDirection () {
       if (this.counterClockwise) return (this.maxAngle - this.minAngle < Math.PI) ? 0 : 1
       return (this.cpMaxAngle - (this.cpMinAngle - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
-    cpPathX () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpMaxAngle)
-      return this.cpCenter + this.radius * Math.cos(this.cpMaxAngle)
+    pathX () {
+      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.cpMaxAngle)
+      return this.center + this.radius * Math.cos(this.cpMaxAngle)
     },
-    cpPathY () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpMaxAngle)
-      return this.cpCenter + this.radius * Math.sin(this.cpMaxAngle)
+    pathY () {
+      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.cpMaxAngle)
+      return this.center + this.radius * Math.sin(this.cpMaxAngle)
     }, 
-    cpPathStrokeWidth () {
+    pathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
     },
     cpMinKnobRadius () {
@@ -239,59 +204,59 @@ export default {
     cpMaxKnobRadius () {
       return this.maxKnobRadius || (this.side / 2) / this.maxKnobRadiusRel
     },
-    cpPathD () {
+    pathD () {
       let parts = []
-      parts.push('M' + this.cpMinKnobX)
-      parts.push(this.cpMinKnobY)
+      parts.push('M' + this.minKnobX)
+      parts.push(this.minKnobY)
       parts.push('A')
       parts.push(this.radius)
       parts.push(this.radius)
       parts.push(0)
-      parts.push(this.cpPathDirection)
+      parts.push(this.pathDirection)
       parts.push(this.counterClockwise ? 0 : 1 )
-      parts.push(this.cpPathX)
-      parts.push(this.cpPathY)
+      parts.push(this.pathX)
+      parts.push(this.pathY)
       return parts.join(' ')
     },
-    cpAngleUnit () {
-      return (Math.PI * 2 - this.startAngleOffset) / this.cpStepsLength
+    angleUnit () {
+      return (Math.PI * 2) / this.stepsLength
     },
-    cpMinAngleValue () {
+    minAngleValue () {
       return (Math.min(
-        this.startAngleOffset + this.cpAngleUnit * this.currentMinStepIndex,
+        this.angleUnit * this.currentMinStepIndex,
         Math.PI * 2 - Number.EPSILON
       ))
     },
-    cpMaxAngleValue () {
+    maxAngleValue () {
       return (Math.min(
-        this.startAngleOffset + this.cpAngleUnit * this.currentMaxStepIndex,
+        this.angleUnit * this.currentMaxStepIndex,
         Math.PI * 2 - Number.EPSILON
       )) - 0.0001 // correct for 100% value
       // - 0.00001 // correct for 100% value
     },
-    cpCurrentMinStep () {
+    currentMinStep () {
       return this.steps[this.currentMinStepIndex]
     },
-    cpCurrentMaxStep () {
+    currentMaxStep () {
       return this.steps[this.currentMaxStepIndex]
     },
-    cpSliderAngle () {
-      return (Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3 - this.redundantAngle + this.startAngleOffset) % (Math.PI * 2)
+    sliderAngle () {
+      return (Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + this.startAngleOffsetRadians * 3 - this.redundantAngle) % (Math.PI * 2)
     },
-    cpIsTouchWithinSliderRange () {
-      const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.cpCenter), 2) + Math.pow(Math.abs(this.relativeY - this.cpCenter), 2))
+    isTouchWithinSliderRange () {
+      const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.center), 2) + Math.pow(Math.abs(this.relativeY - this.center), 2))
       return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
     },
-    cpStartPositionRadians () {
-      return this.startPosition / 180 * Math.PI
+    startAngleOffsetRadians () {
+      return this.startAngleOffset / 180 * Math.PI
     },
-    cpMinKnobX () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.sin(this.cpMinAngle)
-      return this.cpCenter + this.radius * Math.cos(this.cpMinAngle)
+    minKnobX () {
+      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.cpMinAngle)
+      return this.center + this.radius * Math.cos(this.cpMinAngle)
     },
-    cpMinKnobY () {
-      if (this.counterClockwise) return this.cpCenter + this.radius * Math.cos(this.cpMinAngle)
-      return this.cpCenter + this.radius * Math.sin(this.cpMinAngle)
+    minKnobY () {
+      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.cpMinAngle)
+      return this.center + this.radius * Math.sin(this.cpMinAngle)
     }
   },
   methods: {
@@ -300,8 +265,8 @@ export default {
     },
     handleClick (e) {
       this.setNewPosition(e)
-      if (this.cpIsTouchWithinSliderRange) {
-        const newAngle = this.cpSliderAngle
+      if (this.isTouchWithinSliderRange) {
+        const newAngle = this.sliderAngle
         this.defineCurrentKnob(newAngle)
         
         if (this.currentKnob === 'min') this.animateSlider(this.minAngle, newAngle)
@@ -313,8 +278,8 @@ export default {
       this.mousePressed = true
 
       this.setNewPosition(e)
-      if (this.cpIsTouchWithinSliderRange) {
-        const newAngle = this.cpSliderAngle
+      if (this.isTouchWithinSliderRange) {
+        const newAngle = this.sliderAngle
         this.defineCurrentKnob(newAngle)
       }
 
@@ -358,18 +323,18 @@ export default {
       const lastTouch = e.targetTouches.item(e.targetTouches.length - 1)
       this.setNewPosition(lastTouch)
 
-      if (this.cpIsTouchWithinSliderRange) {
+      if (this.isTouchWithinSliderRange) {
         e.preventDefault()
-        const newAngle = this.cpSliderAngle
+        const newAngle = this.sliderAngle
         this.defineCurrentKnob(newAngle)
         this.updateSlider()
       }
     },
     updateMinAngle (angle, isAnimationFinished) {
       this.updateCurrentMinStepFromAngle(angle)
-      this.minAngle = this.cpMinAngleValue
+      this.minAngle = this.minAngleValue
 
-      this.currentMinStepValue = this.cpCurrentMinStep
+      this.currentMinStepValue = this.currentMinStep
         
       if (isAnimationFinished) {
         this.$emit('update:minValue', this.currentMinStepValue) 
@@ -380,9 +345,9 @@ export default {
     },
     updateMaxAngle (angle, isAnimationFinished) {
       this.updateCurrentMaxStepFromAngle(angle)
-      this.maxAngle = this.cpMaxAngleValue
+      this.maxAngle = this.maxAngleValue
 
-      this.currentMaxStepValue = this.cpCurrentMaxStep
+      this.currentMaxStepValue = this.currentMaxStep
 
       if (isAnimationFinished) {
         this.$emit('input', this.currentMaxStepValue)
@@ -397,7 +362,7 @@ export default {
       let minStepValue = this.fitToStep(minValue)
       this.updateCurrentMinStepFromValue(minStepValue)
 
-      this.minAngle = this.cpMinAngleValue
+      this.minAngle = this.minAngleValue
       this.currentMinStepValue = minStepValue
       this.animateSlider(previousAngle, this.minAngle)
     },
@@ -407,12 +372,12 @@ export default {
       let maxStepValue = this.fitToStep(maxValue)
       this.updateCurrentMaxStepFromValue(maxStepValue)
 
-      this.maxAngle = this.cpMaxAngleValue
+      this.maxAngle = this.maxAngleValue
       this.currentMaxStepValue = maxStepValue
       this.animateSlider(previousAngle, this.maxAngle)
     },
     updateSlider () {
-      const angle = this.cpSliderAngle
+      const angle = this.sliderAngle
       this.defineCurrentKnob(angle)
 
       if ((this.currentKnob === 'max') && (Math.abs(angle - this.maxAngle) < Math.PI))
@@ -422,7 +387,7 @@ export default {
     },
     animateSlider (startAngle, endAngle) {
       const direction = startAngle < endAngle ? 1 : -1
-      const curveAngleMovementUnit = (direction * this.cpAngleUnit * 2) / this.stepSize
+      const curveAngleMovementUnit = (direction * this.angleUnit * 2) / this.stepSize
       
       const animate = () => {
         if (Math.abs(endAngle - startAngle) < Math.abs(2 * curveAngleMovementUnit)) {
@@ -448,7 +413,7 @@ export default {
       }
     },
     updateCurrentMinStepFromValue (minValue) {
-      for (let i = 0; i < this.cpStepsLength; i++) {
+      for (let i = 0; i < this.stepsLength; i++) {
         if (minValue <= this.steps[i]) {
           this.currentMinStepIndex = i
           return
@@ -456,21 +421,21 @@ export default {
       }
     },
     updateCurrentMaxStepFromValue (maxValue) {
-      for (let i = 0; i < this.cpStepsLength; i++) {
+      for (let i = 0; i < this.stepsLength; i++) {
         if (maxValue <= this.steps[i]) {
           this.currentMaxStepIndex = i
           return
         }
       }
-      this.currentMaxStepIndex = this.cpStepsLength
+      this.currentMaxStepIndex = this.stepsLength
     },
     updateCurrentMinStepFromAngle (angle) {
-      const stepIndex = Math.round((angle - this.startAngleOffset) / this.cpAngleUnit)
-      this.currentMinStepIndex = Math.min(Math.max(stepIndex, 0), this.cpStepsLength)
+      const stepIndex = Math.round(angle / this.angleUnit)
+      this.currentMinStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
     },
     updateCurrentMaxStepFromAngle (angle) {
-      const stepIndex = Math.round((angle - this.startAngleOffset) / this.cpAngleUnit)
-      this.currentMaxStepIndex = Math.min(Math.max(stepIndex, 0), this.cpStepsLength)
+      const stepIndex = Math.round(angle / this.angleUnit)
+      this.currentMaxStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
     },
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
@@ -482,15 +447,15 @@ export default {
       this.calculateRedundantAngle()
     },
     calculateRedundantAngle () {
-      const totalAngle = Math.atan2(this.relativeY - this.cpCenter, this.relativeX - this.cpCenter) + this.cpStartPositionRadians * 3
-      if ((this.cpStartPositionRadians !== Math.PI / 2) && !this.redundantAngle) {
+      const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + this.startAngleOffsetRadians * 3
+      if ((this.startAngleOffsetRadians !== Math.PI / 2) && !this.redundantAngle) {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
     },
     setInitialPosition () {
       const dimensions = this.containerElement.getBoundingClientRect()
-      const x = (this.cpPathX + dimensions.left).toFixed(0)
-      const y = (this.cpPathY + dimensions.top).toFixed(0)
+      const x = (this.pathX + dimensions.left).toFixed(0)
+      const y = (this.pathY + dimensions.top).toFixed(0)
 
       this.setNewPosition({x, y})
     },
