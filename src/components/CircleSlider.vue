@@ -22,9 +22,9 @@ import _debounce from "lodash.debounce"
 export default {
   name: 'CircleSlider',
   created () {
-    this.stepsCount = 1 + (this.max - this.min) / this.stepSize
+    const stepsCount = 1 + (this.max - this.min) / this.stepSize
     this.steps = Array.from({
-      length: this.stepsCount
+      length: stepsCount
     }, (_, i) => this.min + i * this.stepSize)
 
     this.defineInitialCurrentStepIndex()
@@ -34,9 +34,6 @@ export default {
 
     this.currentMinStepValue = this.currentMinStep
     this.currentMaxStepValue = this.currentMaxStep
-
-    let maxCurveWidth = Math.max(this.mainCircleStrokeWidth, this.pathStrokeWidth)
-    this.radius = (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
 
     this.updateFromPropMaxValue(this.value)
     this.currentMinStepIndex > this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
@@ -147,17 +144,14 @@ export default {
   data () {
     return {
       steps: null,
-      stepsCount: null,
-      radius: 0,
+      // radius: 0,
       maxAngle: 0,
       minAngle: 0,
       currentMinStepValue: 0,
       currentMaxStepValue: 0,
-      mousePressed: false,
       mousemoveTicks: 0,
       currentMinStepIndex: 0,
       currentMaxStepIndex: 0,
-      length: 0,
       sliderTolerance: 0,
       relativeX: 0,
       relativeY: 0,
@@ -166,6 +160,10 @@ export default {
     }
   },
   computed: {
+    radius () {
+      let maxCurveWidth = Math.max(this.mainCircleStrokeWidth, this.pathStrokeWidth)
+      return (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
+    },
     stepsLength () {
       return this.steps.length - 1
     },
@@ -275,7 +273,6 @@ export default {
     },
     handleMouseDown (e) {
       e.preventDefault()
-      this.mousePressed = true
 
       this.setNewPosition(e)
       if (this.isTouchWithinSliderRange) {
@@ -288,7 +285,6 @@ export default {
     },
     handleMouseUp (e) {
       e.preventDefault()
-      this.mousePressed = false
       window.removeEventListener('mousemove', this.handleWindowMouseMove)
       window.removeEventListener('mouseup', this.handleMouseUp)
       this.mousemoveTicks = 0
