@@ -5,7 +5,7 @@
       :side="300"
       :circle-width="20"
       :counter-clockwise="false"
-      :start-angle-offset="250"
+      :start-angle-offset="90"
       :max-knob-radius="20"
       :min-knob-radius="20"
       :min-value.sync="sliderMinValueOrZero"

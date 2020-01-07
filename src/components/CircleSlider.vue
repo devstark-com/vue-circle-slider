@@ -1,46 +1,59 @@
 <template>
   <div>
-    <svg :width="side + 'px'" :height="side + 'px'" :viewBox="'0 0 ' + side + ' ' + side" ref="_svg"
+    <svg 
+      :width="side + 'px'" 
+      :height="side + 'px'" 
+      :viewBox="'0 0 ' + side + ' ' + side" 
+      ref="_svg"
       @touchmove="handleTouchMove"
       @click="handleClick"
       @mousedown="handleMouseDown"
       @mouseup="handleMouseUp"
     >
       <g>
-        <circle :stroke="circleColor" fill="none" :stroke-width="mainCircleStrokeWidth" :cx="center" :cy="center" :r="radius"></circle>
-        <path :stroke="progressColor" fill="none" :stroke-width="pathStrokeWidth" :d="pathD"></path>
-        <circle v-if="rangeSlider" :fill="minKnobColor" :r="cpMinKnobRadius" :cx="minKnobX" :cy="minKnobY"></circle>
-        <circle :fill="maxKnobColor" :r="cpMaxKnobRadius" :cx="pathX" :cy="pathY"></circle>
+        <circle 
+          :stroke="circleColor" 
+          :stroke-width="mainCircleStrokeWidth" 
+          :cx="center" 
+          :cy="center" 
+          :r="radius"
+          fill="none" 
+        ></circle>
+        <path 
+          :stroke="progressColor" 
+          :stroke-width="pathStrokeWidth" 
+          :d="pathD"
+          fill="none" 
+        ></path>
+        <circle 
+          v-if="rangeSlider" 
+          :fill="minKnobColor" 
+          :r="minKnobRadiusFinal" 
+          :cx="minKnobX" 
+          :cy="minKnobY"
+        ></circle>
+        <circle 
+          :fill="maxKnobColor" 
+          :r="maxKnobRadiusFinal" 
+          :cx="pathX" 
+          :cy="pathY"
+        ></circle>
       </g>
     </svg>
   </div>
 </template>
 <script>
-import _debounce from "lodash.debounce"
-// import _throttle from "lodash.throttle"
-
 export default {
   name: 'CircleSlider',
   created () {
-    const stepsCount = 1 + (this.max - this.min) / this.stepSize
-    this.steps = Array.from({
-      length: stepsCount
-    }, (_, i) => this.min + i * this.stepSize)
-
     this.defineInitialCurrentStepIndex()
 
-    this.minAngle = this.minAngleValue
-    this.maxAngle = this.maxAngleValue
-
-    this.currentMinStepValue = this.currentMinStep
-    this.currentMaxStepValue = this.currentMaxStep
-
     this.updateFromPropMaxValue(this.value)
-    this.currentMinStepIndex > this.currentMaxStepIndex ? this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
+    this.currentMinStepIndex > this.currentMaxStepIndex ? 
+      this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
   },
   mounted () {
     this.containerElement = this.$refs._svg
-    this.sliderTolerance = this.radius / 2
     this.setInitialPosition()
     this.containerElement.addEventListener('wheel', this.handleWheelScroll)
   },
@@ -143,16 +156,9 @@ export default {
   },
   data () {
     return {
-      steps: null,
-      // radius: 0,
-      maxAngle: 0,
-      minAngle: 0,
-      currentMinStepValue: 0,
-      currentMaxStepValue: 0,
       mousemoveTicks: 0,
       currentMinStepIndex: 0,
       currentMaxStepIndex: 0,
-      sliderTolerance: 0,
       relativeX: 0,
       relativeY: 0,
       redundantAngle: 0,
@@ -160,9 +166,20 @@ export default {
     }
   },
   computed: {
+    stepsCount () {
+      return 1 + (this.max - this.min) / this.stepSize
+    },
+    steps () {
+      return Array.from({
+        length: this.stepsCount
+      }, (_, i) => this.min + i * this.stepSize)
+    },
     radius () {
       let maxCurveWidth = Math.max(this.mainCircleStrokeWidth, this.pathStrokeWidth)
-      return (this.side / 2) - Math.max(maxCurveWidth, this.cpMinKnobRadius * 2, this.cpMaxKnobRadius * 2) / 2
+      return (this.side / 2) - Math.max(maxCurveWidth, this.minKnobRadiusFinal * 2, this.maxKnobRadiusFinal * 2) / 2
+    },
+    sliderTolerance () {
+      return this.radius / 2
     },
     stepsLength () {
       return this.steps.length - 1
@@ -170,11 +187,11 @@ export default {
     center () {
       return this.side / 2
     },
-    cpMinAngle () {
+    minAngleFinal () {
       if (this.counterClockwise) return (this.minAngle + Math.PI / 2) - this.startAngleOffsetRadians
       return this.minAngle + this.startAngleOffsetRadians
     },
-    cpMaxAngle () {
+    maxAngleFinal () {
       if (this.counterClockwise) return (this.maxAngle + Math.PI / 2) - this.startAngleOffsetRadians
       return this.maxAngle + this.startAngleOffsetRadians
     },
@@ -183,23 +200,23 @@ export default {
     },
     pathDirection () {
       if (this.counterClockwise) return (this.maxAngle - this.minAngle < Math.PI) ? 0 : 1
-      return (this.cpMaxAngle - (this.cpMinAngle - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
+      return (this.maxAngleFinal - (this.minAngleFinal - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
     pathX () {
-      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.cpMaxAngle)
-      return this.center + this.radius * Math.cos(this.cpMaxAngle)
+      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.maxAngleFinal)
+      return this.center + this.radius * Math.cos(this.maxAngleFinal)
     },
     pathY () {
-      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.cpMaxAngle)
-      return this.center + this.radius * Math.sin(this.cpMaxAngle)
+      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.maxAngleFinal)
+      return this.center + this.radius * Math.sin(this.maxAngleFinal)
     }, 
     pathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
     },
-    cpMinKnobRadius () {
+    minKnobRadiusFinal () {
       return this.minKnobRadius || (this.side / 2) / this.minKnobRadiusRel
     },
-    cpMaxKnobRadius () {
+    maxKnobRadiusFinal () {
       return this.maxKnobRadius || (this.side / 2) / this.maxKnobRadiusRel
     },
     pathD () {
@@ -219,42 +236,43 @@ export default {
     angleUnit () {
       return (Math.PI * 2) / this.stepsLength
     },
-    minAngleValue () {
+    minAngle () {
       return (Math.min(
         this.angleUnit * this.currentMinStepIndex,
         Math.PI * 2 - Number.EPSILON
       ))
     },
-    maxAngleValue () {
+    maxAngle () {
       return (Math.min(
         this.angleUnit * this.currentMaxStepIndex,
         Math.PI * 2 - Number.EPSILON
       )) - 0.0001 // correct for 100% value
-      // - 0.00001 // correct for 100% value
     },
-    currentMinStep () {
+    currentMinStepValue () {
       return this.steps[this.currentMinStepIndex]
     },
-    currentMaxStep () {
+    currentMaxStepValue () {
       return this.steps[this.currentMaxStepIndex]
     },
     sliderAngle () {
-      return (Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + this.startAngleOffsetRadians * 3 - this.redundantAngle) % (Math.PI * 2)
+      return (Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + 
+        this.startAngleOffsetRadians * 3 - this.redundantAngle) % (Math.PI * 2)
     },
     isTouchWithinSliderRange () {
-      const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.center), 2) + Math.pow(Math.abs(this.relativeY - this.center), 2))
+      const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.center), 2) + 
+        Math.pow(Math.abs(this.relativeY - this.center), 2))
       return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
     },
     startAngleOffsetRadians () {
       return this.startAngleOffset / 180 * Math.PI
     },
     minKnobX () {
-      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.cpMinAngle)
-      return this.center + this.radius * Math.cos(this.cpMinAngle)
+      if (this.counterClockwise) return this.center + this.radius * Math.sin(this.minAngleFinal)
+      return this.center + this.radius * Math.cos(this.minAngleFinal)
     },
     minKnobY () {
-      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.cpMinAngle)
-      return this.center + this.radius * Math.sin(this.cpMinAngle)
+      if (this.counterClockwise) return this.center + this.radius * Math.cos(this.minAngleFinal)
+      return this.center + this.radius * Math.sin(this.minAngleFinal)
     }
   },
   methods: {
@@ -305,8 +323,13 @@ export default {
       if (this.rangeSlider) return
       
       this.currentKnob = 'max'
-      const valueFromScroll = e.wheelDelta > 0 ?  this.value + this.stepSize : this.value - this.stepSize
-      if ((this.currentMaxStepValue === 0 && e.wheelDelta < 0) || (this.currentMaxStepValue === 100 && e.wheelDelta > 0)) return
+      const valueFromScroll = e.wheelDelta > 0 ? 
+        this.value + this.stepSize : this.value - this.stepSize
+      if (
+        (this.currentMaxStepValue === 0 && e.wheelDelta < 0) || 
+        (this.currentMaxStepValue === 100 && e.wheelDelta > 0)) {
+        return
+      }
       this.updateFromPropMaxValue(valueFromScroll)      
     },
     handleTouchMove (e) {
@@ -328,29 +351,17 @@ export default {
     },
     updateMinAngle (angle, isAnimationFinished) {
       this.updateCurrentMinStepFromAngle(angle)
-      this.minAngle = this.minAngleValue
-
-      this.currentMinStepValue = this.currentMinStep
         
       if (isAnimationFinished) {
         this.$emit('update:minValue', this.currentMinStepValue) 
       }
-      // const emitValue = () => this.$emit('inputMin', this.currentMinStepValue)
-      // const throttled = _throttle(emitValue, 500)
-      // throttled()
     },
     updateMaxAngle (angle, isAnimationFinished) {
       this.updateCurrentMaxStepFromAngle(angle)
-      this.maxAngle = this.maxAngleValue
-
-      this.currentMaxStepValue = this.currentMaxStep
 
       if (isAnimationFinished) {
         this.$emit('input', this.currentMaxStepValue)
       }
-      // const emitValue = () => this.$emit('input', this.currentMaxStepValue)
-      // const throttled = _throttle(emitValue, 1000)
-      // throttled()
     },
     updateFromPropMinValue (minValue) {
       let previousAngle = this.minAngle
@@ -358,8 +369,6 @@ export default {
       let minStepValue = this.fitToStep(minValue)
       this.updateCurrentMinStepFromValue(minStepValue)
 
-      this.minAngle = this.minAngleValue
-      this.currentMinStepValue = minStepValue
       this.animateSlider(previousAngle, this.minAngle)
     },
     updateFromPropMaxValue (maxValue) {
@@ -368,8 +377,6 @@ export default {
       let maxStepValue = this.fitToStep(maxValue)
       this.updateCurrentMaxStepFromValue(maxStepValue)
 
-      this.maxAngle = this.maxAngleValue
-      this.currentMaxStepValue = maxStepValue
       this.animateSlider(previousAngle, this.maxAngle)
     },
     updateSlider () {
@@ -436,14 +443,15 @@ export default {
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
       if (this.counterClockwise) {
-        this.relativeX = dimensions.right - ( e.clientX || e.x )
-      } else this.relativeX = ( e.clientX || e.x ) - dimensions.left
-      this.relativeY = ( e.clientY || e.y ) - dimensions.top
+        this.relativeX = dimensions.right - (e.clientX || e.x)
+      } else this.relativeX = (e.clientX || e.x) - dimensions.left
+      this.relativeY = (e.clientY || e.y) - dimensions.top
 
       this.calculateRedundantAngle()
     },
     calculateRedundantAngle () {
-      const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + this.startAngleOffsetRadians * 3
+      const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + 
+        this.startAngleOffsetRadians * 3
       if ((this.startAngleOffsetRadians !== Math.PI / 2) && !this.redundantAngle) {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
@@ -470,14 +478,14 @@ export default {
       }
       // Don't move any knob when minKnob is at 0 position and 
       // when it is clicked on its half which overflows "0"
-      const halfKnobAngleInDegrees = this.cpMinKnobRadius / ((2 * Math.PI * this.radius) / 360)
+      const halfKnobAngleInDegrees = this.minKnobRadiusFinal / ((2 * Math.PI * this.radius) / 360)
       const halfKnobAngleInRadians = halfKnobAngleInDegrees / 180 * Math.PI
       if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
     setDefaultMinValue () {
       const defaultMinValue = this.currentMinStepValue
       this.updateFromPropMinValue(defaultMinValue)
-      this.$emit('inputMin', defaultMinValue) 
+      this.$emit('update:minValue', defaultMinValue) 
     },
     setDefaultMaxValue () {
       const defaultMaxValue = this.currentMaxStepValue
@@ -490,14 +498,12 @@ export default {
       if (val === this.currentMaxStepValue) return 
       this.currentKnob = 'max'
 
-      const waitFinalMaxValueFromInput = _debounce(this.setDefaultMaxValue, 5000)
-      // waitFinalMaxValueFromInput.cancel()
-      if (val < this.minValue) waitFinalMaxValueFromInput()
-      else this.updateFromPropMaxValue(val)
+      val < this.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val)
     },
     minValue (val) {
       if (!this.rangeSlider || val === this.currentMinStepValue) return 
       this.currentKnob = 'min'
+
       val > this.value ? this.setDefaultMinValue() : this.updateFromPropMinValue(val)
     }
   }
