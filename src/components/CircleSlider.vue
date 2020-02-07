@@ -48,9 +48,9 @@ export default {
   created () {
     this.defineInitialCurrentStepIndex()
 
-    this.updateFromPropMaxValue(this.value)
+    this.updateFromPropMaxValue(this.value.maxValue)
     this.currentMinStepIndex > this.currentMaxStepIndex ? 
-      this.setDefaultMinValue() : this.updateFromPropMinValue(this.minValue)
+      this.setDefaultMinValue() : this.updateFromPropMinValue(this.value.minValue)
   },
   mounted () {
     this.containerElement = this.$refs._svg
@@ -66,12 +66,10 @@ export default {
       default: 90 // degrees 
     },
     value: {
-      type: Number,
-      default: 0
-    },
-    minValue: {
-      type: Number,
-      default: 0
+      type: Object,
+      default: () => {
+        return { minValue: 0, maxValue: 0 }
+      }
     },
     side: {
       type: Number,
@@ -284,7 +282,7 @@ export default {
       if (this.isTouchWithinSliderRange) {
         const newAngle = this.sliderAngle
         this.defineCurrentKnob(newAngle)
-        
+
         if (this.currentKnob === 'min') this.animateSlider(this.minAngle, newAngle)
         else if (this.currentKnob === 'max') this.animateSlider(this.maxAngle, newAngle)
       }
@@ -324,7 +322,8 @@ export default {
       
       this.currentKnob = 'max'
       const valueFromScroll = e.wheelDelta > 0 ? 
-        this.value + this.stepSize : this.value - this.stepSize
+        this.value.maxValue + this.stepSize : this.value.maxValue - this.stepSize
+
       if (
         (this.currentMaxStepValue === 0 && e.wheelDelta < 0) || 
         (this.currentMaxStepValue === 100 && e.wheelDelta > 0)) {
@@ -349,19 +348,13 @@ export default {
         this.updateSlider()
       }
     },
-    updateMinAngle (angle, isAnimationFinished) {
+    updateMinAngle (angle) {
       this.updateCurrentMinStepFromAngle(angle)
-        
-      if (isAnimationFinished) {
-        this.$emit('update:minValue', this.currentMinStepValue) 
-      }
+      this.emitMinMaxValues()
     },
-    updateMaxAngle (angle, isAnimationFinished) {
+    updateMaxAngle (angle) {
       this.updateCurrentMaxStepFromAngle(angle)
-
-      if (isAnimationFinished) {
-        this.$emit('input', this.currentMaxStepValue)
-      }
+      this.emitMinMaxValues()
     },
     updateFromPropMinValue (minValue) {
       let previousAngle = this.minAngle
@@ -394,12 +387,12 @@ export default {
       
       const animate = () => {
         if (Math.abs(endAngle - startAngle) < Math.abs(2 * curveAngleMovementUnit)) {
-          if (this.currentKnob === 'max') this.updateMaxAngle(endAngle, true)
-          else if (this.currentKnob === 'min') this.updateMinAngle(endAngle, true)
+          if (this.currentKnob === 'max') this.updateMaxAngle(endAngle)
+          else if (this.currentKnob === 'min') this.updateMinAngle(endAngle)
         } else {
           const newAngle = startAngle + curveAngleMovementUnit
-          if (this.currentKnob === 'max') this.updateMaxAngle(newAngle, false)
-          else if (this.currentKnob === 'min') this.updateMinAngle(newAngle, false)
+          if (this.currentKnob === 'max') this.updateMaxAngle(newAngle)
+          else if (this.currentKnob === 'min') this.updateMinAngle(newAngle)
           this.animateSlider(newAngle, endAngle)
         }
       }
@@ -407,10 +400,10 @@ export default {
     },
     defineInitialCurrentStepIndex () {
       for (let stepIndex in this.steps) {
-        if (this.steps[stepIndex] === this.minValue) {
+        if (this.steps[stepIndex] === this.value.minValue) {
           this.currentMinStepIndex = stepIndex
         }
-        if (this.steps[stepIndex] === this.value) {
+        if (this.steps[stepIndex] === this.value.maxValue) {
           this.currentMaxStepIndex = stepIndex
         }
       }
@@ -483,28 +476,89 @@ export default {
       if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
     setDefaultMinValue () {
-      const defaultMinValue = this.currentMinStepValue
+      const defaultMinValue = this.currentMaxStepValue
       this.updateFromPropMinValue(defaultMinValue)
-      this.$emit('update:minValue', defaultMinValue) 
+      this.emitMinMaxValues()
     },
     setDefaultMaxValue () {
       const defaultMaxValue = this.currentMaxStepValue
       this.updateFromPropMaxValue(defaultMaxValue)
-      this.$emit('input', defaultMaxValue) 
+      this.emitMinMaxValues()
+    },
+    emitMinMaxValues () {
+      this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
+    },
+    throttle (callback, delay) {
+      let throttleTimeout = null
+      let storedEvent = null
+
+      const throttledEventHandler = event => {
+        
+        storedEvent = event
+
+        const shouldHandleEvent = !throttleTimeout
+
+        if (shouldHandleEvent) {
+          callback(storedEvent)
+
+          storedEvent = null
+
+          throttleTimeout = setTimeout(() => {
+            throttleTimeout = null
+
+            if (storedEvent) {
+              throttledEventHandler(storedEvent)
+            }
+          }, delay)
+        }
+      }
+      return throttledEventHandler
+    },
+    debounce (func, wait, immediate = false) {
+      let timeout
+
+      return function executedFunction() {
+        const context = this
+        const args = arguments
+          
+        const later = function () {
+          timeout = null
+          if (!immediate) func.apply(context, args)
+        }
+
+        const callNow = immediate && !timeout
+      
+        clearTimeout(timeout)
+
+        timeout = setTimeout(later, wait)
+      
+        if (callNow) func.apply(context, args)
+      }
+    },
+    watchHandlerFunction (val) {
+      if (val.minValue === this.currentMinStepValue && val.maxValue === this.currentMaxStepValue) return
+
+      if (val.maxValue !== this.currentMaxStepValue) {
+        this.currentKnob = 'max'
+        val.maxValue < this.value.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val.maxValue)
+        return
+      }
+
+      if (val.minValue !== this.currentMinStepValue) {
+        this.currentKnob = 'min'
+        val.minValue > this.value.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
+      }
+    },
+    returnedFunction (val) {
+      return this.debounce(this.watchHandlerFunction(val), 2000)
     }
   },
   watch: {
-    value (val) {
-      if (val === this.currentMaxStepValue) return 
-      this.currentKnob = 'max'
-
-      val < this.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val)
-    },
-    minValue (val) {
-      if (!this.rangeSlider || val === this.currentMinStepValue) return 
-      this.currentKnob = 'min'
-
-      val > this.value ? this.setDefaultMinValue() : this.updateFromPropMinValue(val)
+    value: {
+      handler: function (val) {
+        this.returnedFunction(val)
+      },
+      deep: true
     }
   }
 }
