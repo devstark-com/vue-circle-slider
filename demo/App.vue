@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <circle-slider 
-      v-model="minMaxValues"
+      v-model="sliderValue"
       :side="300"
       :step-size="1"
       :circle-width="20"
@@ -9,14 +9,16 @@
       :start-angle-offset="90"
       :max-knob-radius="20"
       :min-knob-radius="20"
-      :range-slider="true"
+      :range-slider="false"
       :min-knob-color="minKnobColor"
     >
     </circle-slider>
-    <div class="value"> {{ minMaxValues.maxValue }} </div>
-    <input type="number" v-model.number="minMaxValues.maxValue">
-    <input  type="number" v-model.number="minMaxValues.minValue">
-    <div class="min-value"> {{ minMaxValues.minValue }} </div>
+    <div class="value"> {{ sliderValue }} </div>
+    <input type="number" v-model="sliderValue">
+    <!-- <div class="value"> {{ sliderValue.maxValue }} </div>
+    <input type="number" v-model.number="sliderValue.maxValue">
+    <input  type="number" v-model.number="sliderValue.minValue">
+    <div class="min-value"> {{ sliderValue.minValue }} </div> -->
   </div>
 </template>
 
@@ -25,10 +27,11 @@ export default {
   data () {
     return {
       minKnobColor: '#EA1313',
-      minMaxValues: {
-        minValue: 0,
-        maxValue: 0
-      }
+      sliderValue: 0
+      // sliderValue: {
+      //   maxValue: 50,
+      //   minValue: 20
+      // }
     }
   }
   // computed: {

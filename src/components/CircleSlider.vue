@@ -45,31 +45,13 @@
 <script>
 export default {
   name: 'CircleSlider',
-  created () {
-    this.defineInitialCurrentStepIndex()
-
-    this.updateFromPropMaxValue(this.value.maxValue)
-    this.currentMinStepIndex > this.currentMaxStepIndex ? 
-      this.setDefaultMinValue() : this.updateFromPropMinValue(this.value.minValue)
-  },
-  mounted () {
-    this.containerElement = this.$refs._svg
-    this.setInitialPosition()
-    this.containerElement.addEventListener('wheel', this.handleWheelScroll)
-  },
-  beforeDestroy () {
-    this.containerElement.removeEventListener('wheel', this.handleWheelScroll)
-  },
   props: {
     startAngleOffset: {
       type: Number,
       default: 90 // degrees 
     },
     value: {
-      type: Object,
-      default: () => {
-        return { minValue: 0, maxValue: 0 }
-      }
+      type: [ Number, Object, String ]
     },
     side: {
       type: Number,
@@ -160,7 +142,12 @@ export default {
       relativeX: 0,
       relativeY: 0,
       redundantAngle: 0,
-      currentKnob: ''
+      currentKnob: '',
+      sliderValues: {
+        maxValue: 0,
+        minValue: 0
+      },
+      debounceWait: 1000
     }
   },
   computed: {
@@ -273,7 +260,59 @@ export default {
       return this.center + this.radius * Math.sin(this.minAngleFinal)
     }
   },
+  watch: {
+    value: {
+      handler: function (val) {
+        if (typeof val === 'object') {
+          this.handleObjectMaxValue(val.maxValue)
+          this.handleObjectMinValue(val.minValue)
+        }
+        else this.handleNumberValue(val)
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   methods: {
+    handleObjectMaxValue (val) {
+      if (val === '') val = 0      
+      if (typeof val === 'string') val = parseInt(val)
+      
+      if (Math.abs(val - this.sliderValues.maxValue) === 1) {                
+        this.sliderValues.maxValue = val
+        this.watchHandlerFunction(this.sliderValues)
+      } else {
+        this.sliderValues.maxValue = val
+        const returned = this.debounce(() => this.watchHandlerFunction(this.sliderValues), this.debounceWait)
+        window.addEventListener('input', returned)
+      }
+    },
+    handleObjectMinValue (val) {
+      if (val === '') val = 0
+      if (typeof val === 'string') val = parseInt(val)
+      
+      if (Math.abs(val - this.sliderValues.minValue) === 1) {        
+        this.sliderValues.minValue = val
+        this.watchHandlerFunction(this.sliderValues)
+      } else {
+        this.sliderValues.minValue = val
+        const returned = this.debounce(() => this.watchHandlerFunction(this.sliderValues), this.debounceWait)
+        window.addEventListener('input', returned)
+      }
+    },
+    handleNumberValue (val) {
+      if (val === '') val = 0
+      if (typeof val === 'string') val = parseInt(val)
+
+      if (Math.abs(val - this.sliderValues.maxValue) === 1) {        
+        this.sliderValues.maxValue = val
+        this.watchHandlerFunction(this.sliderValues)
+      } else {
+        this.sliderValues.maxValue = val
+        const returned = this.debounce(() => this.watchHandlerFunction(this.sliderValues), this.debounceWait)
+        window.addEventListener('input', returned)
+      }
+    },
     fitToStep (val) {
       return Math.round(val / this.stepSize) * this.stepSize
     },
@@ -322,7 +361,7 @@ export default {
       
       this.currentKnob = 'max'
       const valueFromScroll = e.wheelDelta > 0 ? 
-        this.value.maxValue + this.stepSize : this.value.maxValue - this.stepSize
+        this.sliderValues.maxValue + this.stepSize : this.sliderValues.maxValue - this.stepSize
 
       if (
         (this.currentMaxStepValue === 0 && e.wheelDelta < 0) || 
@@ -400,10 +439,10 @@ export default {
     },
     defineInitialCurrentStepIndex () {
       for (let stepIndex in this.steps) {
-        if (this.steps[stepIndex] === this.value.minValue) {
+        if (this.steps[stepIndex] === this.sliderValues.minValue) {
           this.currentMinStepIndex = stepIndex
         }
-        if (this.steps[stepIndex] === this.value.maxValue) {
+        if (this.steps[stepIndex] === this.sliderValues.maxValue) {
           this.currentMaxStepIndex = stepIndex
         }
       }
@@ -476,7 +515,7 @@ export default {
       if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
     setDefaultMinValue () {
-      const defaultMinValue = this.currentMaxStepValue
+      const defaultMinValue = this.currentMinStepValue
       this.updateFromPropMinValue(defaultMinValue)
       this.emitMinMaxValues()
     },
@@ -486,53 +525,33 @@ export default {
       this.emitMinMaxValues()
     },
     emitMinMaxValues () {
-      this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
-    },
-    throttle (callback, delay) {
-      let throttleTimeout = null
-      let storedEvent = null
-
-      const throttledEventHandler = event => {
-        
-        storedEvent = event
-
-        const shouldHandleEvent = !throttleTimeout
-
-        if (shouldHandleEvent) {
-          callback(storedEvent)
-
-          storedEvent = null
-
-          throttleTimeout = setTimeout(() => {
-            throttleTimeout = null
-
-            if (storedEvent) {
-              throttledEventHandler(storedEvent)
-            }
-          }, delay)
-        }
+      if (!this.sliderValues.minValue) {
+        this.$emit('input', this.currentMaxStepValue) 
+      } else {
+        this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
       }
-      return throttledEventHandler
     },
-    debounce (func, wait, immediate = false) {
+    // throttle (callback, delay) {},
+    debounce (fn, wait, callFirst) {
       let timeout
-
-      return function executedFunction() {
-        const context = this
-        const args = arguments
-          
-        const later = function () {
-          timeout = null
-          if (!immediate) func.apply(context, args)
+      return function() {
+        if (!wait) {
+          return fn.apply(this, arguments)
         }
-
-        const callNow = immediate && !timeout
-      
+        let context = this
+        let args = arguments
+        let callNow = callFirst && !timeout
         clearTimeout(timeout)
+        timeout = setTimeout(function() {
+          timeout = null
+          if (!callNow) {
+            return fn.apply(context, args)
+          }
+        }, wait)
 
-        timeout = setTimeout(later, wait)
-      
-        if (callNow) func.apply(context, args)
+        if (callNow) {
+          return fn.apply(this, arguments)
+        }
       }
     },
     watchHandlerFunction (val) {
@@ -540,26 +559,30 @@ export default {
 
       if (val.maxValue !== this.currentMaxStepValue) {
         this.currentKnob = 'max'
-        val.maxValue < this.value.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val.maxValue)
+        val.maxValue < this.sliderValues.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val.maxValue)
         return
       }
 
       if (val.minValue !== this.currentMinStepValue) {
         this.currentKnob = 'min'
-        val.minValue > this.value.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
+        val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
       }
-    },
-    returnedFunction (val) {
-      return this.debounce(this.watchHandlerFunction(val), 2000)
     }
   },
-  watch: {
-    value: {
-      handler: function (val) {
-        this.returnedFunction(val)
-      },
-      deep: true
-    }
+  created () {
+    this.defineInitialCurrentStepIndex()
+    this.updateFromPropMaxValue(this.sliderValues.maxValue)
+    this.currentMinStepIndex > this.currentMaxStepIndex ? 
+      this.setDefaultMinValue() : this.updateFromPropMinValue(this.sliderValues.minValue)
+  },
+  mounted () {
+    this.containerElement = this.$refs._svg
+    this.setInitialPosition()
+    this.containerElement.addEventListener('wheel', this.handleWheelScroll)
+  },
+  beforeDestroy () {
+    this.containerElement.removeEventListener('wheel', this.handleWheelScroll)
+    window.removeEventListener('input')
   }
 }
 </script>
