@@ -290,12 +290,17 @@ export default {
 
   watch: {
     value: {
-      handler: function (val) {
-        if (typeof val === 'object') {
-          this.handleObjectMaxValue(val.maxValue)
-          this.handleObjectMinValue(val.minValue)
+      handler (newVal) {        
+        if (typeof newVal === 'object') {
+          const maxValue = this.validateValue(newVal.maxValue)
+          const minValue = this.validateValue(newVal.minValue)
+          this.updateCurrentValue(maxValue, this.sliderValues.maxValue, false)
+          this.updateCurrentValue(minValue, this.sliderValues.minValue, true)
         }
-        else this.handleNumberValue(val)
+        else {
+          const value = this.validateValue(newVal)
+          this.updateCurrentValue(value, this.sliderValues.maxValue, false)
+        }
       },
       deep: true,
       immediate: true
@@ -303,44 +308,34 @@ export default {
   },
 
   methods: {
-    handleObjectMaxValue (val) {
-      if (val === '') val = 0      
-      if (typeof val === 'string') val = parseInt(val)
-      
-      if (Math.abs(val - this.sliderValues.maxValue) === 1) {                
-        this.sliderValues.maxValue = val
-        this.watchHandlerFunction(this.sliderValues)
+    updateCurrentValue (newValue, prevValue, isMinValue) {
+      if (Math.abs(newValue - prevValue) === this.stepSize) {   
+        isMinValue ? this.sliderValues.minValue = newValue : this.sliderValues.maxValue = newValue
+        this.updateFromPropValue(this.sliderValues)
       } else {
-        this.sliderValues.maxValue = val
-        window.addEventListener('input', this.debounceInput())
+        isMinValue ? this.sliderValues.minValue = newValue : this.sliderValues.maxValue = newValue
       }
     },
 
-    handleObjectMinValue (val) {
-      if (val === '') val = 0
-      if (typeof val === 'string') val = parseInt(val)
-      
-      if (Math.abs(val - this.sliderValues.minValue) === 1) {        
-        this.sliderValues.minValue = val
-        this.watchHandlerFunction(this.sliderValues)
-      } else {
-        this.sliderValues.minValue = val
-        window.addEventListener('input', this.debounceInput())
+    updateFromPropValue (val) {
+      if (val.minValue === this.currentMinStepValue && val.maxValue === this.currentMaxStepValue) return
 
+      if (val.maxValue !== this.currentMaxStepValue) {
+        this.currentKnob = 'max'
+        val.maxValue < this.sliderValues.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val.maxValue)
+        return
+      }
+
+      if (val.minValue !== this.currentMinStepValue) {
+        this.currentKnob = 'min'
+        val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
       }
     },
 
-    handleNumberValue (val) {
-      if (val === '') val = 0
-      if (typeof val === 'string') val = parseInt(val)
-
-      if (Math.abs(val - this.sliderValues.maxValue) === 1) {        
-        this.sliderValues.maxValue = val
-        this.watchHandlerFunction(this.sliderValues)
-      } else {
-        this.sliderValues.maxValue = val
-        window.addEventListener('input', this.debounceInput())
-      }
+    validateValue (value) {
+      if (value === '') return 0      
+      else if (typeof value === 'string') return parseInt(value)  
+      return value
     },
 
     fitToStep (val) {
@@ -579,7 +574,7 @@ export default {
     },
 
     emitMinMaxValues () {
-      if (!this.sliderValues.minValue) {
+      if (typeof this.sliderValues !== 'object') {
         this.$emit('input', this.currentMaxStepValue) 
       } else {
         this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
@@ -587,28 +582,13 @@ export default {
     },
 
     throttleWheelScroll () {
-      const throttleInterval = 30
+      const throttleInterval = 30 // make this a prop ?
       return throttle(e => this.handleWheelScroll(e), throttleInterval)
     },
 
     debounceInput () {
-      const debounceWait = 2000
-      return debounce(() => this.watchHandlerFunction(this.sliderValues), debounceWait)
-    },
-
-    watchHandlerFunction (val) {
-      if (val.minValue === this.currentMinStepValue && val.maxValue === this.currentMaxStepValue) return
-
-      if (val.maxValue !== this.currentMaxStepValue) {
-        this.currentKnob = 'max'
-        val.maxValue < this.sliderValues.minValue ? this.setDefaultMaxValue() : this.updateFromPropMaxValue(val.maxValue)
-        return
-      }
-
-      if (val.minValue !== this.currentMinStepValue) {
-        this.currentKnob = 'min'
-        val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
-      }
+      const debounceWait = 2000 // make this a prop ?
+      return debounce(() => this.updateFromPropValue(this.sliderValues), debounceWait)
     }
   },
 
@@ -623,8 +603,10 @@ export default {
   mounted () {
     this.containerElement = this.$refs._svg
     this.setInitialPosition()
+    this.emitMinMaxValues()
 
     this.containerElement.addEventListener('wheel', this.throttleWheelScroll())
+    window.addEventListener('input', this.debounceInput())
   },
 
   beforeDestroy () {

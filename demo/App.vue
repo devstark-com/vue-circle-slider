@@ -3,22 +3,22 @@
     <circle-slider 
       v-model="sliderValue"
       :side="300"
-      :step-size="1"
+      :step-size="stepSize"
       :circle-width="20"
       :counter-clockwise="false"
       :start-angle-offset="90"
       :max-knob-radius="20"
       :min-knob-radius="20"
-      :range-slider="false"
+      :range-slider="true"
       :min-knob-color="minKnobColor"
     >
     </circle-slider>
-    <div class="value"> {{ sliderValue }} </div>
-    <input type="number" v-model="sliderValue">
-    <!-- <div class="value"> {{ sliderValue.maxValue }} </div>
-    <input type="number" v-model.number="sliderValue.maxValue">
-    <input  type="number" v-model.number="sliderValue.minValue">
-    <div class="min-value"> {{ sliderValue.minValue }} </div> -->
+    <!-- <div class="value"> {{ sliderValue }} </div>
+    <input type="number" v-model="sliderValue" :step="stepSize"> -->
+    <div class="value"> {{ sliderValue.maxValue }} </div>
+    <input type="number" v-model.number="sliderValue.maxValue" :step="stepSize">
+    <input  type="number" v-model.number="sliderValue.minValue" :step="stepSize">
+    <div class="min-value"> {{ sliderValue.minValue }} </div>
   </div>
 </template>
 
@@ -27,33 +27,15 @@ export default {
   data () {
     return {
       minKnobColor: '#EA1313',
-      sliderValue: 0
-      // sliderValue: {
-      //   maxValue: 50,
-      //   minValue: 20
-      // }
+      // sliderValue: 0,
+      sliderValue: {
+        maxValue: 54,
+        minValue: 21
+        // minValue: 0
+      },
+      stepSize: 1
     }
   }
-  // computed: {
-  //   sliderMaxValueOrZero: {
-  //     get () {
-  //       return this.minMaxValues.maxValue === '' ? 0 : this.minMaxValues.maxValue
-  //     },
-  //     set (value) {
-  //       this.minMaxValues.maxValue = value
-  //       // this.sliderMaxValue = value
-  //     }
-  //   },
-  //   sliderMinValueOrZero: {
-  //     get () {
-  //       return this.minMaxValues.minValue === '' ? 0 : this.minMaxValues.minValue
-  //     },
-  //     set (value) {
-  //       this.minMaxValues.minValue = value
-  //       // this.sliderMinValue = value
-  //     }
-  //   }
-  // }
 }
 </script>
 
