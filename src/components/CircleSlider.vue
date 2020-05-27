@@ -52,7 +52,7 @@ export default {
       default: 90 // degrees 
     },
     value: {
-      type: [ Number, Object, String ]
+      type: [Number, Object, String]
     },
     side: {
       type: Number,
@@ -135,7 +135,6 @@ export default {
     //   default: null
     // }
   },
-
   data () {
     return {
       mousemoveTicks: 0,
@@ -151,76 +150,60 @@ export default {
       }
     }
   },
-
   computed: {
     stepsCount () {
       return 1 + (this.max - this.min) / this.stepSize
     },
-
     steps () {
       return Array.from({
         length: this.stepsCount
       }, (_, i) => this.min + i * this.stepSize)
     },
-
     radius () {
       let maxCurveWidth = Math.max(this.mainCircleStrokeWidth, this.pathStrokeWidth)
       return (this.side / 2) - Math.max(maxCurveWidth, this.minKnobRadiusFinal * 2, this.maxKnobRadiusFinal * 2) / 2
     },
-
     sliderTolerance () {
       return this.radius / 2
     },
-
     stepsLength () {
       return this.steps.length - 1
     },
-
     center () {
       return this.side / 2
     },
-
     minAngleFinal () {
       if (this.counterClockwise) return (this.minAngle + Math.PI / 2) - this.startAngleOffsetRadians
       return this.minAngle + this.startAngleOffsetRadians
     },
-
     maxAngleFinal () {
       if (this.counterClockwise) return (this.maxAngle + Math.PI / 2) - this.startAngleOffsetRadians
       return this.maxAngle + this.startAngleOffsetRadians
     },
-
     mainCircleStrokeWidth () {
       return this.circleWidth || (this.side / 2) / this.circleWidthRel
     },
-
     pathDirection () {
       if (this.counterClockwise) return (this.maxAngle - this.minAngle < Math.PI) ? 0 : 1
       return (this.maxAngleFinal - (this.minAngleFinal - Math.PI / 2) < 3 / 2 * Math.PI) ? 0 : 1
     },
-
     pathX () {
       if (this.counterClockwise) return this.center + this.radius * Math.sin(this.maxAngleFinal)
       return this.center + this.radius * Math.cos(this.maxAngleFinal)
     },
-
     pathY () {
       if (this.counterClockwise) return this.center + this.radius * Math.cos(this.maxAngleFinal)
       return this.center + this.radius * Math.sin(this.maxAngleFinal)
     }, 
-
     pathStrokeWidth () {
       return this.progressWidth || (this.side / 2) / this.progressWidthRel
     },
-
     minKnobRadiusFinal () {
       return this.minKnobRadius || (this.side / 2) / this.minKnobRadiusRel
     },
-
     maxKnobRadiusFinal () {
       return this.maxKnobRadius || (this.side / 2) / this.maxKnobRadiusRel
     },
-    
     pathD () {
       let parts = []
       parts.push('M' + this.minKnobX)
@@ -235,59 +218,48 @@ export default {
       parts.push(this.pathY)
       return parts.join(' ')
     },
-
     angleUnit () {
       return (Math.PI * 2) / this.stepsLength
     },
-
     minAngle () {
       return (Math.min(
         this.angleUnit * this.currentMinStepIndex,
         Math.PI * 2 - Number.EPSILON
       ))
     },
-
     maxAngle () {
       return (Math.min(
         this.angleUnit * this.currentMaxStepIndex,
         Math.PI * 2 - Number.EPSILON
       )) - 0.0001 // correct for 100% value
     },
-
     currentMinStepValue () {
       return this.steps[this.currentMinStepIndex]
     },
-
     currentMaxStepValue () {
       return this.steps[this.currentMaxStepIndex]
     },
-
     sliderAngle () {
       return (Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + 
         this.startAngleOffsetRadians * 3 - this.redundantAngle) % (Math.PI * 2)
     },
-
     isTouchWithinSliderRange () {
       const touchOffset = Math.sqrt(Math.pow(Math.abs(this.relativeX - this.center), 2) + 
         Math.pow(Math.abs(this.relativeY - this.center), 2))
       return Math.abs(touchOffset - this.radius) <= this.sliderTolerance
     },
-
     startAngleOffsetRadians () {
       return this.startAngleOffset / 180 * Math.PI
     },
-
     minKnobX () {
       if (this.counterClockwise) return this.center + this.radius * Math.sin(this.minAngleFinal)
       return this.center + this.radius * Math.cos(this.minAngleFinal)
     },
-
     minKnobY () {
       if (this.counterClockwise) return this.center + this.radius * Math.cos(this.minAngleFinal)
       return this.center + this.radius * Math.sin(this.minAngleFinal)
     }
   },
-
   watch: {
     value: {
       handler (newVal) {        
@@ -306,7 +278,6 @@ export default {
       immediate: true
     }
   },
-
   methods: {
     updateCurrentValue (newValue, prevValue, isMinValue) {
       if (Math.abs(newValue - prevValue) === this.stepSize) {   
@@ -316,7 +287,6 @@ export default {
         isMinValue ? this.sliderValues.minValue = newValue : this.sliderValues.maxValue = newValue
       }
     },
-
     updateFromPropValue (val) {
       if (val.minValue === this.currentMinStepValue && val.maxValue === this.currentMaxStepValue) return
 
@@ -331,17 +301,14 @@ export default {
         val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
       }
     },
-
     validateValue (value) {
       if (value === '') return 0      
       else if (typeof value === 'string') return parseInt(value)  
       return value
     },
-
     fitToStep (val) {
       return Math.round(val / this.stepSize) * this.stepSize
     },
-
     handleClick (e) {
       this.setNewPosition(e)
       if (this.isTouchWithinSliderRange) {
@@ -352,7 +319,6 @@ export default {
         else if (this.currentKnob === 'max') this.animateSlider(this.maxAngle, newAngle)
       }
     },
-
     handleMouseDown (e) {
       e.preventDefault()
 
@@ -365,14 +331,12 @@ export default {
       window.addEventListener('mousemove', this.handleWindowMouseMove)
       window.addEventListener('mouseup', this.handleMouseUp)
     },
-
     handleMouseUp (e) {
       e.preventDefault()
       window.removeEventListener('mousemove', this.handleWindowMouseMove)
       window.removeEventListener('mouseup', this.handleMouseUp)
       this.mousemoveTicks = 0
     },
-
     handleWindowMouseMove (e) {
       e.preventDefault()
       if (this.minAngle >= this.maxAngle && this.maxAngle > 0) return
@@ -384,7 +348,6 @@ export default {
       this.setNewPosition(e)
       this.updateSlider()
     },
-
     handleWheelScroll (e) {
       e.preventDefault()
       if (this.rangeSlider) return
@@ -400,7 +363,6 @@ export default {
       }
       this.updateFromPropMaxValue(valueFromScroll)      
     },
-
     handleTouchMove (e) {
       this.$emit('touchmove')
       // Do nothing if two or more fingers used
@@ -418,17 +380,14 @@ export default {
         this.updateSlider()
       }
     },
-
     updateMinAngle (angle) {
       this.updateCurrentMinStepFromAngle(angle)
       this.emitMinMaxValues()
     },
-
     updateMaxAngle (angle) {
       this.updateCurrentMaxStepFromAngle(angle)
       this.emitMinMaxValues()
     },
-
     updateFromPropMinValue (minValue) {
       let previousAngle = this.minAngle
       
@@ -437,7 +396,6 @@ export default {
 
       this.animateSlider(previousAngle, this.minAngle)
     },
-
     updateFromPropMaxValue (maxValue) {
       let previousAngle = this.maxAngle
       
@@ -446,7 +404,6 @@ export default {
 
       this.animateSlider(previousAngle, this.maxAngle)
     },
-
     updateSlider () {
       const angle = this.sliderAngle
       this.defineCurrentKnob(angle)
@@ -456,7 +413,6 @@ export default {
       else if ((this.currentKnob === 'min') && (Math.abs(angle - this.minAngle) < Math.PI))
         this.updateMinAngle(angle)
     },
-
     animateSlider (startAngle, endAngle) {
       const direction = startAngle < endAngle ? 1 : -1
       const curveAngleMovementUnit = (direction * this.angleUnit * 2) / this.stepSize
@@ -474,7 +430,6 @@ export default {
       }
       window.requestAnimationFrame(animate)
     },
-
     defineInitialCurrentStepIndex () {
       for (let stepIndex in this.steps) {
         if (this.steps[stepIndex] === this.sliderValues.minValue) {
@@ -485,7 +440,6 @@ export default {
         }
       }
     },
-
     updateCurrentMinStepFromValue (minValue) {
       for (let i = 0; i < this.stepsLength; i++) {
         if (minValue <= this.steps[i]) {
@@ -494,7 +448,6 @@ export default {
         }
       }
     },
-
     updateCurrentMaxStepFromValue (maxValue) {
       for (let i = 0; i < this.stepsLength; i++) {
         if (maxValue <= this.steps[i]) {
@@ -504,17 +457,14 @@ export default {
       }
       this.currentMaxStepIndex = this.stepsLength
     },
-
     updateCurrentMinStepFromAngle (angle) {
       const stepIndex = Math.round(angle / this.angleUnit)
       this.currentMinStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
     },
-
     updateCurrentMaxStepFromAngle (angle) {
       const stepIndex = Math.round(angle / this.angleUnit)
       this.currentMaxStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
     },
-
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
       if (this.counterClockwise) {
@@ -524,7 +474,6 @@ export default {
 
       this.calculateRedundantAngle()
     },
-
     calculateRedundantAngle () {
       const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + 
         this.startAngleOffsetRadians * 3
@@ -532,7 +481,6 @@ export default {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
     },
-
     setInitialPosition () {
       const dimensions = this.containerElement.getBoundingClientRect()
       const x = (this.pathX + dimensions.left).toFixed(0)
@@ -540,7 +488,6 @@ export default {
 
       this.setNewPosition({x, y})
     },
-
     defineCurrentKnob (newAngle) {
       if (!this.rangeSlider) {
         this.currentKnob = 'max'
@@ -560,19 +507,16 @@ export default {
       const halfKnobAngleInRadians = halfKnobAngleInDegrees / 180 * Math.PI
       if (newAngle + halfKnobAngleInRadians > Math.PI * 2) this.currentKnob = ''
     },
-
     setDefaultMinValue () {
       const defaultMinValue = this.currentMinStepValue
       this.updateFromPropMinValue(defaultMinValue)
       this.emitMinMaxValues()
     },
-
     setDefaultMaxValue () {
       const defaultMaxValue = this.currentMaxStepValue
       this.updateFromPropMaxValue(defaultMaxValue)
       this.emitMinMaxValues()
     },
-
     emitMinMaxValues () {
       if (typeof this.sliderValues !== 'object') {
         this.$emit('input', this.currentMaxStepValue) 
@@ -580,18 +524,15 @@ export default {
         this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
       }
     },
-
     throttleWheelScroll () {
       const throttleInterval = 30 // make this a prop ?
       return throttle(e => this.handleWheelScroll(e), throttleInterval)
     },
-
     debounceInput () {
       const debounceWait = 2000 // make this a prop ?
       return debounce(() => this.updateFromPropValue(this.sliderValues), debounceWait)
     }
   },
-
   created () {
     this.defineInitialCurrentStepIndex()
     this.updateFromPropMaxValue(this.sliderValues.maxValue)
@@ -599,7 +540,6 @@ export default {
     this.currentMinStepIndex > this.currentMaxStepIndex ? 
       this.setDefaultMinValue() : this.updateFromPropMinValue(this.sliderValues.minValue)
   },
-
   mounted () {
     this.containerElement = this.$refs._svg
     this.setInitialPosition()
@@ -608,7 +548,6 @@ export default {
     this.containerElement.addEventListener('wheel', this.throttleWheelScroll())
     window.addEventListener('input', this.debounceInput())
   },
-
   beforeDestroy () {
     this.containerElement.removeEventListener('wheel', this.throttleWheelScroll())
     window.removeEventListener('input', this.debounceInput())
