@@ -43,7 +43,7 @@
   </div>
 </template>
 <script>
-import { debounce, throttle } from './utils'
+import { debounce, throttle, validateValue } from './utils'
 export default {
   name: 'CircleSlider',
   props: {
@@ -264,13 +264,13 @@ export default {
     value: {
       handler (newVal) {        
         if (typeof newVal === 'object') {
-          const maxValue = this.validateValue(newVal.maxValue)
-          const minValue = this.validateValue(newVal.minValue)
+          const maxValue = validateValue(newVal.maxValue)
+          const minValue = validateValue(newVal.minValue)
           this.updateCurrentValue(maxValue, this.sliderValues.maxValue, false)
           this.updateCurrentValue(minValue, this.sliderValues.minValue, true)
         }
         else {
-          const value = this.validateValue(newVal)
+          const value = validateValue(newVal)
           this.updateCurrentValue(value, this.sliderValues.maxValue, false)
         }
       },
@@ -300,11 +300,6 @@ export default {
         this.currentKnob = 'min'
         val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
       }
-    },
-    validateValue (value) {
-      if (value === '') return 0      
-      else if (typeof value === 'string') return parseInt(value)  
-      return value
     },
     fitToStep (val) {
       return Math.round(val / this.stepSize) * this.stepSize
