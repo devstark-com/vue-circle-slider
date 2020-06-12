@@ -43,7 +43,7 @@
   </div>
 </template>
 <script>
-import { debounce, throttle, validateValue } from './utils'
+import { debounce, throttle, castValue } from './utils'
 export default {
   name: 'CircleSlider',
   props: {
@@ -258,20 +258,26 @@ export default {
     minKnobY () {
       if (this.counterClockwise) return this.center + this.radius * Math.cos(this.minAngleFinal)
       return this.center + this.radius * Math.sin(this.minAngleFinal)
+    },
+    processedValue () {
+      if (typeof this.value === 'object') {
+        return { 
+          maxValue: castValue(this.value.maxValue), 
+          minValue: castValue(this.value.minValue)
+        }
+      } 
+      return castValue(this.value)
     }
   },
   watch: {
-    value: {
-      handler (newVal) {        
-        if (typeof newVal === 'object') {
-          const maxValue = validateValue(newVal.maxValue)
-          const minValue = validateValue(newVal.minValue)
-          this.updateCurrentValue(maxValue, this.sliderValues.maxValue, false)
-          this.updateCurrentValue(minValue, this.sliderValues.minValue, true)
+    processedValue: {
+      handler (val) {    
+        if (typeof val === 'object') {
+          this.updateCurrentValue(val.maxValue, this.sliderValues.maxValue, false)
+          this.updateCurrentValue(val.minValue, this.sliderValues.minValue, true)
         }
         else {
-          const value = validateValue(newVal)
-          this.updateCurrentValue(value, this.sliderValues.maxValue, false)
+          this.updateCurrentValue(val, this.sliderValues.maxValue, false)
         }
       },
       deep: true,
@@ -283,7 +289,7 @@ export default {
       if (Math.abs(newValue - prevValue) === this.stepSize) {   
         isMinValue ? this.sliderValues.minValue = newValue : this.sliderValues.maxValue = newValue
         this.updateFromPropValue(this.sliderValues)
-      } else {
+      } else {        
         isMinValue ? this.sliderValues.minValue = newValue : this.sliderValues.maxValue = newValue
       }
     },
@@ -513,7 +519,7 @@ export default {
       this.emitMinMaxValues()
     },
     emitMinMaxValues () {
-      if (typeof this.sliderValues !== 'object') {
+      if (typeof this.value !== 'object') {
         this.$emit('input', this.currentMaxStepValue) 
       } else {
         this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 
@@ -530,17 +536,15 @@ export default {
   },
   created () {
     this.defineInitialCurrentStepIndex()
-    this.updateFromPropMaxValue(this.sliderValues.maxValue)
-
-    this.currentMinStepIndex > this.currentMaxStepIndex ? 
-      this.setDefaultMinValue() : this.updateFromPropMinValue(this.sliderValues.minValue)
   },
   mounted () {
     this.containerElement = this.$refs._svg
     this.setInitialPosition()
     this.emitMinMaxValues()
-
-    this.containerElement.addEventListener('wheel', this.throttleWheelScroll())
+    
+    if (!this.rangeSlider) {
+      this.containerElement.addEventListener('wheel', this.throttleWheelScroll())
+    }
     window.addEventListener('input', this.debounceInput())
   },
   beforeDestroy () {

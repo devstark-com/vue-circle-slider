@@ -1,7 +1,6 @@
-export const validateValue = value => {
-  if (value === '') return 0      
-  else if (typeof value === 'string') return parseInt(value)  
-  return value
+export const castValue = value => {
+  if (!value) return 0 
+  return parseInt(value)  
 }
 
 export const debounce = (fn, wait, callFirst) => {
