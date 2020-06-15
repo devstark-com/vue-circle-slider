@@ -125,6 +125,14 @@ export default {
     rangeSlider: {
       type: Boolean,
       default: false
+    },
+    inputReactTime: {
+      type: Number,
+      default: 2000
+    },
+    scrollIntervalTime: {
+      type: Number,
+      default: 30
     }
     // limitMin: {
     //   type: Number,
@@ -526,12 +534,10 @@ export default {
       }
     },
     throttleWheelScroll () {
-      const throttleInterval = 30 // make this a prop ?
-      return throttle(e => this.handleWheelScroll(e), throttleInterval)
+      return throttle(e => this.handleWheelScroll(e), this.scrollIntervalTime)
     },
     debounceInput () {
-      const debounceWait = 2000 // make this a prop ?
-      return debounce(() => this.updateFromPropValue(this.sliderValues), debounceWait)
+      return debounce(() => this.updateFromPropValue(this.sliderValues), this.inputReactTime)
     }
   },
   created () {
