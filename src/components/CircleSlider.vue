@@ -131,15 +131,15 @@ export default {
     scrollIntervalTime: {
       type: Number,
       default: 30
+    },
+    limitMin: {
+      type: Number,
+      default: 0
+    },
+    limitMax: {
+      type: Number,
+      default: 100
     }
-    // limitMin: {
-    //   type: Number,
-    //   default: null
-    // },
-    // limitMax: {
-    //   type: Number,
-    //   default: null
-    // }
   },
   data () {
     return {
@@ -265,24 +265,38 @@ export default {
       if (this.counterClockwise) return this.center + this.radius * Math.cos(this.minAngleFinal)
       return this.center + this.radius * Math.sin(this.minAngleFinal)
     },
+    limitMinFit () {
+      return this.fitToStep(this.limitMin)
+    },
+    limitMaxFit () {
+      return this.fitToStep(this.limitMax)
+    },
     processedValue () {
       if (typeof this.value === 'object') {
         return { 
-          maxValue: castValue(this.value.maxValue), 
-          minValue: castValue(this.value.minValue)
+          maxValue: this.fitToStep(castValue(this.value.maxValue)), 
+          minValue: this.fitToStep(castValue(this.value.minValue))
         }
       } 
-      return castValue(this.value)
+      return this.fitToStep(castValue(this.value))
     }
   },
   watch: {
     processedValue: {
       handler (val) {    
         if (typeof val === 'object') {
+          if (val.minValue < this.limitMinFit || val.maxValue > this.limitMaxFit) {
+            this.emitMinMaxValues()
+            return 
+          }
           this.updateCurrentValue(val.maxValue, this.sliderValues.maxValue, false)
           this.updateCurrentValue(val.minValue, this.sliderValues.minValue, true)
         }
         else {
+          if (val > this.limitMaxFit) {
+            this.emitMinMaxValues()
+            return 
+          }
           this.updateCurrentValue(val, this.sliderValues.maxValue, false)
         }
       },
@@ -397,18 +411,12 @@ export default {
     },
     updateFromPropMinValue (minValue) {
       let previousAngle = this.minAngle
-      
-      let minStepValue = this.fitToStep(minValue)
-      this.updateCurrentMinStepFromValue(minStepValue)
-
+      this.updateCurrentMinStepFromValue(minValue)
       this.animateSlider(previousAngle, this.minAngle)
     },
     updateFromPropMaxValue (maxValue) {
       let previousAngle = this.maxAngle
-      
-      let maxStepValue = this.fitToStep(maxValue)
-      this.updateCurrentMaxStepFromValue(maxStepValue)
-
+      this.updateCurrentMaxStepFromValue(maxValue)
       this.animateSlider(previousAngle, this.maxAngle)
     },
     updateSlider () {
@@ -465,12 +473,18 @@ export default {
       this.currentMaxStepIndex = this.stepsLength
     },
     updateCurrentMinStepFromAngle (angle) {
-      const stepIndex = Math.round(angle / this.angleUnit)
-      this.currentMinStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
+      const stepIndex = this.getStepIndexFromAngle(angle)
+      const limitMinIndex = this.limitMinFit / this.stepSize
+      this.currentMinStepIndex = this.steps[stepIndex] < this.limitMinFit ? limitMinIndex : stepIndex
     },
     updateCurrentMaxStepFromAngle (angle) {
+      const stepIndex = this.getStepIndexFromAngle(angle)
+      const limitMaxIndex = this.limitMaxFit / this.stepSize
+      this.currentMaxStepIndex = this.steps[stepIndex] > this.limitMaxFit ? limitMaxIndex : stepIndex
+    },
+    getStepIndexFromAngle (angle) {
       const stepIndex = Math.round(angle / this.angleUnit)
-      this.currentMaxStepIndex = Math.min(Math.max(stepIndex, 0), this.stepsLength)
+      return Math.min(Math.max(stepIndex, 0), this.stepsLength)
     },
     setNewPosition (e) {
       const dimensions = this.containerElement.getBoundingClientRect()
@@ -482,8 +496,7 @@ export default {
       this.calculateRedundantAngle()
     },
     calculateRedundantAngle () {
-      const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + 
-        this.startAngleOffsetRadians * 3
+      const totalAngle = Math.atan2(this.relativeY - this.center, this.relativeX - this.center) + this.startAngleOffsetRadians * 3
       if ((this.startAngleOffsetRadians !== Math.PI / 2) && !this.redundantAngle) {
         this.redundantAngle = totalAngle - (Math.PI * 2)
       }
@@ -525,7 +538,7 @@ export default {
       this.emitMinMaxValues()
     },
     emitMinMaxValues () {
-      if (typeof this.value !== 'object') {
+      if (typeof this.processedValue !== 'object') {
         this.$emit('input', this.currentMaxStepValue) 
       } else {
         this.$emit('input', { minValue: this.currentMinStepValue, maxValue: this.currentMaxStepValue }) 

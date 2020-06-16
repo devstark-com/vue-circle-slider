@@ -9,20 +9,20 @@
       :start-angle-offset="90"
       :max-knob-radius="20"
       :min-knob-radius="20"
-      :range-slider="false"
+      :range-slider="true"
       :min-knob-color="minKnobColor"
       :input-react-time="1000"
       :scroll-interval-time="30"
+      :limit-min="21"
+      :limit-max="81"
     >
-      <!-- :min="40"
-      :max="60" -->
     </circle-slider>
-    <div class="value"> {{ sliderValue }} </div>
-    <input type="number" v-model="sliderValue" :step="stepSize">
-    <!-- <div class="value"> {{ sliderValue.maxValue }} </div>
+    <!-- <div class="value"> {{ sliderValue }} </div>
+    <input type="number" v-model="sliderValue" :step="stepSize"> -->
+    <div class="value"> {{ sliderValue.maxValue }} </div>
     <input type="number" v-model.number="sliderValue.maxValue" :step="stepSize">
     <input  type="number" v-model.number="sliderValue.minValue" :step="stepSize">
-    <div class="min-value"> {{ sliderValue.minValue }} </div> -->
+    <div class="min-value"> {{ sliderValue.minValue }} </div>
   </div>
 </template>
 
@@ -31,11 +31,11 @@ export default {
   data () {
     return {
       minKnobColor: '#EA1313',
-      sliderValue: 50,
-      // sliderValue: {
-      //   maxValue: 54,
-      //   minValue: 21
-      // },
+      // sliderValue: 50,
+      sliderValue: {
+        maxValue: 54,
+        minValue: 21
+      },
       stepSize: 1
     }
   }
