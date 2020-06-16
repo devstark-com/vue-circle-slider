@@ -51,9 +51,7 @@ export default {
       type: Number,
       default: 90 // degrees 
     },
-    value: {
-      type: [Number, Object, String]
-    },
+    value: [Number, Object, String],
     side: {
       type: Number,
       default: 100
@@ -442,10 +440,10 @@ export default {
     defineInitialCurrentStepIndex () {
       for (let stepIndex in this.steps) {
         if (this.steps[stepIndex] === this.sliderValues.minValue) {
-          this.currentMinStepIndex = stepIndex
+          this.currentMinStepIndex = parseInt(stepIndex)
         }
         if (this.steps[stepIndex] === this.sliderValues.maxValue) {
-          this.currentMaxStepIndex = stepIndex
+          this.currentMaxStepIndex = parseInt(stepIndex)
         }
       }
     },

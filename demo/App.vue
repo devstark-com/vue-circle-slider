@@ -14,6 +14,8 @@
       :input-react-time="1000"
       :scroll-interval-time="30"
     >
+      <!-- :min="40"
+      :max="60" -->
     </circle-slider>
     <div class="value"> {{ sliderValue }} </div>
     <input type="number" v-model="sliderValue" :step="stepSize">
