@@ -11,8 +11,8 @@
       :min-knob-radius="20"
       :range-slider="true"
       :min-knob-color="minKnobColor"
-      :input-react-time="1000"
-      :scroll-interval-time="30"
+      :debounce-input="1000"
+      :throttle-scroll="30"
       :limit-min="21"
       :limit-max="81"
     >

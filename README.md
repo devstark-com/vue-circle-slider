@@ -36,11 +36,17 @@ Vue.use(VueCircleSlider)
 - svg based view
 - binding via `v-model`
 - defining min & max values
+- limitation of accessible slider range with `limitMin` and `limitMax`
 - defining step size
-- animation while updating to new value on click by circle
+- animation while updating to new value
 - touch devices support (`touchmove`)
 - sizes customization: exact and relative definitions
 - colors customization
+- counterclockwise direction of the circle slider
+- mousewheel/touchpad scroll detection
+- positioning starting point of the slider at any position on the circle
+- range slider with min/max values
+
 
 ## Examples
 
@@ -64,7 +70,7 @@ or customize some properties:
   :step-size="100"
   :circle-width-rel="20"
   :progress-width-rel="10"
-  :knob-radius="10"
+  :max-knob-radius="10"
 ></circle-slider>
 ...
 ```
@@ -81,23 +87,35 @@ or customize some properties:
 | stepSize         | Number        | 1        | the gap between the values |
 | circleColor      | String        | `#334860`| color of slider circumference |
 | progressColor    | String        | `#00be7e`| color of progress curve |
-| knobColor        | String        | `#00be7e`| knob color |
-| knobRadius       | Number        | null     | exact knob radius in px |
-| knobRadiusRel    | Number        | 7        | relative knob radius. radius value in px will be calculated as `(side/2) / knobRadiusRel` |
 | circleWidth      | Number        | null     | exact width of circle in px |
 | circleWidthRel   | Number        | 20       | relative circle width. width value in px will be calculated as `(side/2) / circleWidthRel` |
 | progressWidth    | Number        | null     | exact progress curve width in px |
 | progressWidthRel | Number        | 10       | relative progress curve width. width value in px will be calculated as `(side/2) / progressWidthRel` |
+| startAngleOffset | Number        | 90       | angle in degrees (from 0 to 360) at which to place "zero" position of the slider |
+| counterClockwise | Boolean       | false    | changes the direction of the slider to counter-clockwise |
+| rangeSlider      | Boolean       | false    | turns the slider into a range-slider with "min" and "max" knobs/values |
+| limitMin         | Number        | 0        | value that "min" knob can't be less than |
+| limitMax         | Number        | 100      | value that "max" knob can't be greater than |
+| minKnobColor     | String        | `#00be7e`| "min" knob color |
+| maxKnobColor     | String        | `#00be7e`| "max" knob color |
+| minKnobRadius    | Number        | null     | exact "min" knob radius in px |
+| maxKnobRadius    | Number        | null     | exact "max" knob radius in px |
+| minKnobRadiusRel | Number        | 7        | relative "min" knob radius. Radius value in px will be calculated as `(side/2) / minKnobRadiusRel` |
+| maxKnobRadiusRel | Number        | 7        | relative "max" knob radius. Radius value in px will be calculated as `(side/2) / maxKnobRadiusRel` |
+| debouceInput     | Number        | 1000     | number of milliseconds to wait after user stops typing in input element, allows getting final input value |
+| throttleScroll   | Number        | 30       | rate in milliseconds at which to handle value coming from mousewheel/touchpad scrolling |
+ 
 
 ### Events
 
-| Name          | Params        | Description  |
-| --------------|:--------------|--------------|
-| touchmove     | none          | fires on touch devices |
+| Name          | Params        | Description              |
+| --------------|:--------------|--------------------------|
+| input         | none          | fires on value change    |
+| touchmove     | none          | fires on touch devices   |
 
 ### Slots
 
-There is no any slots available
+There are no slots available
 
 
 # Demo
@@ -111,7 +129,6 @@ There is no any slots available
   - globalComponent[Boolean] - enable/disable global component registration
   - componentName[String] - ability to define custom name for component
   - options with defaults for all props (with same names)
-- add `limitMin` and `limitMax` props to limit an accessible slider range
 
 ---
 

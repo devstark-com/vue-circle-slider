@@ -124,11 +124,11 @@ export default {
       type: Boolean,
       default: false
     },
-    inputReactTime: {
+    debounceInput: {
       type: Number,
-      default: 2000
+      default: 1000
     },
-    scrollIntervalTime: {
+    throttleScroll: {
       type: Number,
       default: 30
     },
@@ -546,10 +546,10 @@ export default {
       }
     },
     throttleWheelScroll () {
-      return throttle(e => this.handleWheelScroll(e), this.scrollIntervalTime)
+      return throttle(e => this.handleWheelScroll(e), this.throttleScroll)
     },
-    debounceInput () {
-      return debounce(() => this.updateFromPropValue(this.sliderValues), this.inputReactTime)
+    debounceUserInput () {
+      return debounce(() => this.updateFromPropValue(this.sliderValues), this.debounceInput)
     }
   },
   created () {
@@ -563,11 +563,11 @@ export default {
     if (!this.rangeSlider) {
       this.containerElement.addEventListener('wheel', this.throttleWheelScroll())
     }
-    window.addEventListener('input', this.debounceInput())
+    window.addEventListener('input', this.debounceUserInput())
   },
   beforeDestroy () {
     this.containerElement.removeEventListener('wheel', this.throttleWheelScroll())
-    window.removeEventListener('input', this.debounceInput())
+    window.removeEventListener('input', this.debounceUserInput())
   }
 }
 </script>
