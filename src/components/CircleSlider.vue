@@ -285,20 +285,10 @@ export default {
     processedValue: {
       handler (val) {    
         if (typeof val === 'object') {
-          if (val.minValue < this.limitMinFit || val.maxValue > this.limitMaxFit) {
-            this.emitMinMaxValues()
-            return 
-          }
           this.updateCurrentValue(val.maxValue, this.sliderValues.maxValue, false)
           this.updateCurrentValue(val.minValue, this.sliderValues.minValue, true)
         }
-        else {
-          if (val > this.limitMaxFit) {
-            this.emitMinMaxValues()
-            return 
-          }
-          this.updateCurrentValue(val, this.sliderValues.maxValue, false)
-        }
+        else this.updateCurrentValue(val, this.sliderValues.maxValue, false)
       },
       deep: true,
       immediate: true
@@ -314,6 +304,12 @@ export default {
       }
     },
     updateFromPropValue (val) {
+      const valueLimitExceeded = this.checkIfLimitExceeded(val)
+      if (valueLimitExceeded) {
+        this.emitMinMaxValues()
+        return
+      }
+
       if (val.minValue === this.currentMinStepValue && val.maxValue === this.currentMaxStepValue) return
 
       if (val.maxValue !== this.currentMaxStepValue) {
@@ -326,6 +322,11 @@ export default {
         this.currentKnob = 'min'
         val.minValue > this.sliderValues.maxValue ? this.setDefaultMinValue() : this.updateFromPropMinValue(val.minValue)
       }
+    },
+    checkIfLimitExceeded (val) {
+      return typeof this.processedValue === 'object' 
+        ? val.minValue < this.limitMinFit || val.maxValue > this.limitMaxFit
+        : val.maxValue > this.limitMaxFit
     },
     fitToStep (val) {
       return Math.round(val / this.stepSize) * this.stepSize
